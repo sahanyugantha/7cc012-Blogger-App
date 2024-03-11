@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,18 +18,18 @@ class BlogPost {
 }
 
 class MyApp extends StatelessWidget {
-
   // Sample list of blog posts
   final List<BlogPost> blogPosts = [
     BlogPost(
       title: 'Post 1',
       description: 'Description of Post 1',
-      coverPhotoUrl: 'https://cdn-icons-png.flaticon.com/256/2593/2593549.png/150',
+      coverPhotoUrl: 'https://cdn-icons-png.flaticon.com/256/2593/2593549.png',
     ),
     BlogPost(
       title: 'Post 2',
       description: 'Description of Post 2',
-      coverPhotoUrl: 'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png/200',
+      coverPhotoUrl:
+          'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png',
     ),
     BlogPost(
       title: 'Post 3',
@@ -45,15 +46,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Blogger App by Sahan',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(0, 223, 200, 99)),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(0, 223, 200, 99)),
         useMaterial3: true,
       ),
       home: MyHomePage(blogPosts: blogPosts),
     );
   }
 }
-
-
 
 class MyHomePage extends StatelessWidget {
   final List<BlogPost> blogPosts;
@@ -62,34 +62,105 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Blog'),
-      ),
-      body: ListView.builder(
-        itemCount: blogPosts.length,
-        itemBuilder: (BuildContext context, int index) {
-          String coverPhotoUrl = blogPosts[index].coverPhotoUrl ?? 'https://cdn-icons-png.freepik.com/256/1187/1187595.png/150';
-          return ListTile(
-              leading: Image.network(
-                coverPhotoUrl,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.error); // Display a placeholder icon for failed images
-                },
-              ),
-            title: Text(blogPosts[index].title),
-            subtitle: Text(blogPosts[index].description),
-            onTap: () {
-            // Navigate to the detail screen for the selected blog post
-            },
-          );
-        },
-      )
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: const Text('Blog'),
+        ),
+        body: Center(
+          child: Container(
+            width: 600,
+            margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            child: ListView.builder(
+              itemCount: blogPosts.length,
+              itemBuilder: (BuildContext context, int index) {
+                String coverPhotoUrl = blogPosts[index].coverPhotoUrl ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      color: Colors.grey[200],
+                    ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
+                     // tileColor: Color.fromRGBO(158, 158, 158, 100),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: FractionallySizedBox(
+                             // width: MediaQuery.of(context).size.width * 0.8,
+                              widthFactor: 0.8,
+                              child: Image.network(
+                                coverPhotoUrl,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                      Icons.error); // Show icon for failed images
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 15), // Add some spacing between the image and title
+                          Text(
+                            blogPosts[index].title,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(blogPosts[index].description),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              IconButton(
+                              icon: Icon(Icons.favorite),
+                              onPressed: () {
+                                if(!kIsWeb) { //avoid web browsers.
+                                  ScaffoldMessenger.of(context).
+                                  showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Liked'),
+                                          duration: Duration(milliseconds: 1000),
+                                      )
+                                  );
+                                }
+                              },
+                              ),
+                              IconButton(
+                              icon: Icon(Icons.share),
+                              onPressed: () {
+                                if(!kIsWeb) { //avoid web browsers.
+                                  ScaffoldMessenger.of(context).
+                                  showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Shared'),
+                                          duration: Duration(milliseconds: 1000),
+                                      )
+                                  );
+                                }
+                              },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        if(!kIsWeb) { //avoid web browsers.
+                          ScaffoldMessenger.of(context).
+                          showSnackBar(
+                              const SnackBar(
+                                  content: Text('Opening...'),
+                                  duration: Duration(milliseconds: 500),
+                              )
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        )
     );
   }
 }
