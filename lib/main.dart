@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       title: 'Post 2',
       description: 'Description of Post 2',
       coverPhotoUrl:
-          'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png',
+      'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png',
     ),
     BlogPost(
       title: 'Post 3',
@@ -84,13 +84,13 @@ class MyHomePage extends StatelessWidget {
                     ),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
-                     // tileColor: Color.fromRGBO(158, 158, 158, 100),
+                      // tileColor: Color.fromRGBO(158, 158, 158, 100),
                       title: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Center(
                             child: FractionallySizedBox(
-                             // width: MediaQuery.of(context).size.width * 0.8,
+                              // width: MediaQuery.of(context).size.width * 0.8,
                               widthFactor: 0.8,
                               child: Image.network(
                                 coverPhotoUrl,
@@ -112,32 +112,32 @@ class MyHomePage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
-                              icon: Icon(Icons.favorite),
-                              onPressed: () {
-                                if(!kIsWeb) { //avoid web browsers.
-                                  ScaffoldMessenger.of(context).
-                                  showSnackBar(
-                                      const SnackBar(
+                                icon: Icon(Icons.favorite),
+                                onPressed: () {
+                                  if(!kIsWeb) { //avoid web browsers.
+                                    ScaffoldMessenger.of(context).
+                                    showSnackBar(
+                                        const SnackBar(
                                           content: Text('Liked'),
                                           duration: Duration(milliseconds: 1000),
-                                      )
-                                  );
-                                }
-                              },
+                                        )
+                                    );
+                                  }
+                                },
                               ),
                               IconButton(
-                              icon: Icon(Icons.share),
-                              onPressed: () {
-                                if(!kIsWeb) { //avoid web browsers.
-                                  ScaffoldMessenger.of(context).
-                                  showSnackBar(
-                                      const SnackBar(
+                                icon: Icon(Icons.share),
+                                onPressed: () {
+                                  if(!kIsWeb) { //avoid web browsers.
+                                    ScaffoldMessenger.of(context).
+                                    showSnackBar(
+                                        const SnackBar(
                                           content: Text('Shared'),
                                           duration: Duration(milliseconds: 1000),
-                                      )
-                                  );
-                                }
-                              },
+                                        )
+                                    );
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -148,8 +148,8 @@ class MyHomePage extends StatelessWidget {
                           ScaffoldMessenger.of(context).
                           showSnackBar(
                               const SnackBar(
-                                  content: Text('Opening...'),
-                                  duration: Duration(milliseconds: 500),
+                                content: Text('Opening...'),
+                                duration: Duration(milliseconds: 500),
                               )
                           );
                         }
