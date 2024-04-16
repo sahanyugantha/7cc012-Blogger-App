@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:blogger/userdata.dart';
 import 'package:http/http.dart' as http;
 import 'blog_post.dart';
 
@@ -26,4 +27,28 @@ class ApiService {
       throw Exception('Failed to update post likes');
     }
   }
+
+  static performLogin(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/login'),
+        body: json.encode({'email': email, 'password': password}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        // Successful login
+        final userData = json.decode(response.body);
+        return UserData.fromJson(userData);
+      } else {
+        // Failed to login
+        throw Exception('Failed to login');
+      }
+    } catch (e) {
+      // Exception occurred during login
+      print('Error during login: $e');
+      throw Exception('Error during login');
+    }
+  }
+
 }

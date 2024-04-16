@@ -1,5 +1,8 @@
+import 'package:blogger/ApiService.dart';
 import 'package:blogger/homepage.dart';
 import 'package:flutter/material.dart';
+
+import 'blog_post.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,6 +16,8 @@ class _LoginPageState extends State<LoginPage> {
 
     final TextEditingController _emailController = TextEditingController();
     final TextEditingController _passwordController = TextEditingController();
+
+
 
     return Scaffold(
         appBar: AppBar(
@@ -69,13 +74,27 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _performLogin(String email, String password) {
+  void _performLogin(String email, String password) async {
+    try {
+      final userData = await ApiService.performLogin(email, password);
+      _showSnackBar("Login successfully!");
+      // Login successful, navigate to home page
+      // Retrieve blog posts data after successful login
+      final List<BlogPost> blogPosts = await ApiService.fetchBlogPosts();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(
+            userData: userData,
+            blogPosts: blogPosts,
+          ),
+        ),
+      );
+
+    } catch (e) {
+      _showSnackBar("Login failed $e");
+    }
 
 
-    // Navigate to the next screen after successful login
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MyHomePage(blogPosts: blogPosts)),
-    );
   }
 }

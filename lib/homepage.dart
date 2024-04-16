@@ -1,4 +1,5 @@
 import 'package:blogger/loginpage.dart';
+import 'package:blogger/userdata.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,14 @@ import 'ApiService.dart';
 import 'blog_post.dart';
 
 class MyHomePage extends StatefulWidget {
+  final UserData? userData;
   final List<BlogPost> blogPosts;
 
-  const MyHomePage({Key? key, required this.blogPosts}) : super(key: key);
+  const MyHomePage({
+    Key? key,
+    this.userData,
+    required this.blogPosts
+  }) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -42,13 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                child: const Text(
-                  'A simple blogging app by Sahan Perera',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
+                child: drawerTitle(),
               ),
               ListTile(
                 title: Text('Login'),
@@ -172,6 +172,22 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         )
     );
+  }
+
+  Text drawerTitle(){
+    if (widget.userData != null) {
+      // User is logged in
+      return Text('Welcome, ${widget.userData!.username}!');
+    } else {// User is not logged in
+      return const Text('Please log in to manage blog content.');
+    }
+
+    // const Text(
+    //     'A simple blogging app by Sahan Perera',
+    //     style: TextStyle(
+    //     color: Colors.white,
+    //     fontSize: 24,
+    // )
   }
 
   void _likePost(BuildContext context, int postId) async {
