@@ -1,42 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'ApiService.dart';
+import 'blog_post.dart';
+
 void main() {
   runApp(MyApp());
 }
 
-class BlogPost {
-  final String title;
-  final String description;
-  final String? coverPhotoUrl;
-
-  BlogPost({
-    required this.title,
-    required this.description,
-    this.coverPhotoUrl,
-  });
-}
 
 class MyApp extends StatelessWidget {
-  // Sample list of blog posts
-  final List<BlogPost> blogPosts = [
-    BlogPost(
-      title: 'Post 1',
-      description: 'Description of Post 1',
-      coverPhotoUrl: 'https://cdn-icons-png.flaticon.com/256/2593/2593549.png',
-    ),
-    BlogPost(
-      title: 'Post 2',
-      description: 'Description of Post 2',
-      coverPhotoUrl:
-      'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png',
-    ),
-    BlogPost(
-      title: 'Post 3',
-      description: 'Description of Post 3',
-    ),
-    // Add more blog posts as needed
-  ];
+  // Fetch list of blog posts from API
+  final List<BlogPost> blogPosts = [];
 
   MyApp({super.key});
 
@@ -50,7 +25,19 @@ class MyApp extends StatelessWidget {
             seedColor: const Color.fromARGB(0, 223, 200, 99)),
         useMaterial3: true,
       ),
-      home: MyHomePage(blogPosts: blogPosts),
+      home: FutureBuilder<List<BlogPost>>(
+        future: ApiService.fetchBlogPosts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                  final blogPosts = snapshot.data ?? [];
+                    return MyHomePage(blogPosts: blogPosts);
+                  }
+                },
+      ),
     );
   }
 }
@@ -58,7 +45,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   final List<BlogPost> blogPosts;
 
-  const MyHomePage({super.key, required this.blogPosts});
+  const MyHomePage({Key? key, required this.blogPosts}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +61,7 @@ class MyHomePage extends StatelessWidget {
             child: ListView.builder(
               itemCount: blogPosts.length,
               itemBuilder: (BuildContext context, int index) {
-                String coverPhotoUrl = blogPosts[index].coverPhotoUrl ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+                String coverPhotoUrl = blogPosts[index].imageURL ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
                   child: Container(
@@ -122,6 +109,7 @@ class MyHomePage extends StatelessWidget {
                                           duration: Duration(milliseconds: 1000),
                                         )
                                     );
+                                    _likePost(context, blogPosts[index].id); // Call like API when button is pressed
                                   }
                                 },
                               ),
@@ -163,4 +151,25 @@ class MyHomePage extends StatelessWidget {
         )
     );
   }
+
+  void _likePost(BuildContext context, int postId) async {
+    try {
+      await ApiService.updatePostLikes(postId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Liked'),
+          duration: Duration(milliseconds: 1000),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to like post'),
+          duration: Duration(milliseconds: 1000),
+        ),
+      );
+    }
+  }
 }
+
+
