@@ -1,3 +1,4 @@
+import 'package:blogger/loginpage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,10 +19,55 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: const Text('Blog'),
+          leading: IconButton(
+            icon: Icon(Icons.menu), // Hamburger icon
+            onPressed: () {
+              //Scaffold.of(context).openDrawer(); // Open drawer on icon press
+              _scaffoldKey.currentState!.openDrawer(); // Open drawer using GlobalKey
+            },
+          ),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                child: const Text(
+                  'A simple blogging app by Sahan Perera',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                title: Text('Login'),
+                onTap: () {
+                  //Navigator.pop(context); // Close drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+              ),
+              ListTile(
+                title: Text('About me'),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                },
+              ),
+            ],
+          ),
         ),
         body: Center(
           child: Container(
@@ -80,9 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     );
                                     _likePost(context, widget.blogPosts[index].id); // Call like API when button is pressed
                                     setState(() {
-                                      if (widget.blogPosts[index].likes != null) {
-                                        widget.blogPosts[index].likes = (widget.blogPosts[index].likes ?? 0) + 1;
-                                      }
+                                      widget.blogPosts[index].likes++; // Increment likes count
                                     });
                                   }
                                 },

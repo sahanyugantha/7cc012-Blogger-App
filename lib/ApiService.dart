@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'blog_post.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000'; // API base URL
+  // static const String baseUrl = 'http://localhost:3000'; //  API base URL
+  static const String baseUrl = 'http://10.0.2.2:3000'; // localhost API base URL for Android
 
   // Fetch all blog posts from the API
   static Future<List<BlogPost>> fetchBlogPosts() async {

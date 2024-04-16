@@ -3,7 +3,7 @@ class BlogPost {
   final String title;
   final String description;
   final String? imageURL;
-  int? likes;
+  int likes;
 
   BlogPost({
     required this.id,
