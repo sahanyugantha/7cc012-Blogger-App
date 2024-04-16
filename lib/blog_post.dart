@@ -3,14 +3,14 @@ class BlogPost {
   final String title;
   final String description;
   final String? imageURL;
-  final int? num;
+  int? likes;
 
   BlogPost({
     required this.id,
     required this.title,
     required this.description,
     this.imageURL,
-    this.num,
+    this.likes = 0,
   });
 
   factory BlogPost.fromJson(Map<String, dynamic> json) {
@@ -18,8 +18,8 @@ class BlogPost {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      imageURL: json['imageURL'],
-      num: json['num'],
+      imageURL: json['image'],
+      likes: json['likes'] ?? 0,
     );
   }
 }

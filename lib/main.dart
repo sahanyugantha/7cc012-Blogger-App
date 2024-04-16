@@ -10,10 +10,9 @@ void main() {
 
 
 class MyApp extends StatelessWidget {
-  // Fetch list of blog posts from API
   final List<BlogPost> blogPosts = [];
 
-  MyApp({super.key});
+  MyApp({Key? key});
 
   // This widget is the root of your application.
   @override
@@ -26,26 +25,32 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: FutureBuilder<List<BlogPost>>(
-        future: ApiService.fetchBlogPosts(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else {
-                  final blogPosts = snapshot.data ?? [];
-                    return MyHomePage(blogPosts: blogPosts);
-                  }
-                },
+          future: ApiService.fetchBlogPosts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+            final blogPosts = snapshot.data ?? [];
+              return MyHomePage(blogPosts: blogPosts);
+            }
+          },
       ),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   final List<BlogPost> blogPosts;
 
   const MyHomePage({Key? key, required this.blogPosts}) : super(key: key);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +64,9 @@ class MyHomePage extends StatelessWidget {
             width: 600,
             margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
             child: ListView.builder(
-              itemCount: blogPosts.length,
+              itemCount: widget.blogPosts.length,
               itemBuilder: (BuildContext context, int index) {
-                String coverPhotoUrl = blogPosts[index].imageURL ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+                String coverPhotoUrl = widget.blogPosts[index].imageURL ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
                   child: Container(
@@ -91,10 +96,10 @@ class MyHomePage extends StatelessWidget {
                           ),
                           SizedBox(height: 15), // Add some spacing between the image and title
                           Text(
-                            blogPosts[index].title,
+                            widget.blogPosts[index].title,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Text(blogPosts[index].description),
+                          Text(widget.blogPosts[index].description),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -109,9 +114,18 @@ class MyHomePage extends StatelessWidget {
                                           duration: Duration(milliseconds: 1000),
                                         )
                                     );
-                                    _likePost(context, blogPosts[index].id); // Call like API when button is pressed
+                                    _likePost(context, widget.blogPosts[index].id); // Call like API when button is pressed
+                                    setState(() {
+                                      if (widget.blogPosts[index].likes != null) {
+                                        widget.blogPosts[index].likes = (widget.blogPosts[index].likes ?? 0) + 1;
+                                      }
+                                    });
                                   }
                                 },
+                              ),
+                              Text(
+
+                                  widget.blogPosts[index].likes.toString()
                               ),
                               IconButton(
                                 icon: Icon(Icons.share),
