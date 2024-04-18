@@ -106,9 +106,16 @@ class _MyHomePageState extends State<MyHomePage> {
           child: ListView.builder(
             itemCount: widget.blogPosts.length,
             itemBuilder: (BuildContext context, int index) {
-              String coverPhotoUrl =
-                  widget.blogPosts[index].imageURL ??
-                      'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+              // String coverPhotoUrl =
+              //     widget.blogPosts[index].imageURL ??
+              //         'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+
+              String coverPhotoUrl = "";
+              if(widget.blogPosts[index].imageURL == null || widget.blogPosts[index].imageURL == "NA"){
+                coverPhotoUrl = '${ApiService.baseUrl}/images/no-image.jpg';
+              } else {
+                coverPhotoUrl = '${ApiService.baseUrl}/${widget.blogPosts[index].imageURL}';
+              }
 
               return Padding(
                 padding:
