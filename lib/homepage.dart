@@ -1,13 +1,9 @@
-import 'dart:convert';
-
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:blogger/loginpage.dart';
 import 'package:blogger/userdata.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-import 'ApiService.dart';
-import 'blog_post.dart';
+import 'package:blogger/ApiService.dart';
+import 'package:blogger/blog_post.dart';
 
 class MyHomePage extends StatefulWidget {
   final List<BlogPost> blogPosts;
@@ -22,8 +18,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-  UserData?_userData;
+  UserData? _userData;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -33,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadUserData() async {
     dynamic userDataString = await ApiService.getUserData();
-    print('USER DATA 1 ******************--------->>>>> $userDataString');
+    print('USER DATA: $userDataString');
     UserData userData = UserData.fromJson(userDataString);
     setState(() {
       _userData = userData;
@@ -42,211 +38,187 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text('Blog'),
-          leading: IconButton(
-            icon: Icon(Icons.menu), // Hamburger icon
-            onPressed: () {
-              //Scaffold.of(context).openDrawer(); // Open drawer on icon press
-              _scaffoldKey.currentState!.openDrawer(); // Open drawer using GlobalKey
-            },
-          ),
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Blog'),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState!.openDrawer();
+          },
         ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                child: drawerTitle(_userData),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
               ),
-              if(_userData == null)
+              child: drawerTitle(_userData),
+            ),
+            if (_userData == null) ...[
               ListTile(
                 title: Text('Login'),
                 onTap: () {
-                  //Navigator.pop(context); // Close drawer
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => LoginPage()),
                   );
                 },
               ),
-              if(_userData == null)
               ListTile(
                 title: Text('Register'),
                 onTap: () {
-                  Navigator.pop(context); // Close drawer
+                  Navigator.pop(context);
                 },
               ),
-              if(_userData != null)
-                ListTile(
-                  title: Text('Create Post'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                  },
-                ),
-              if(_userData != null)
-                ListTile(
-                  title: Text('Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                  },
-                ),
-              if(_userData != null)
-                ListTile(
-                  title: Text('Logout'),
-                  onTap: () {
-                   _performLogout(); // logout
-                  },
-                ),
+            ] else ...[
+              ListTile(
+                title: Text('Create Post'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Logout'),
+                onTap: () {
+                  _performLogout();
+                },
+              ),
             ],
-          ),
+          ],
         ),
-        body: Center(
-          child: Container(
-            width: 600,
-            margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-            child: ListView.builder(
-              itemCount: widget.blogPosts.length,
-              itemBuilder: (BuildContext context, int index) {
-                String coverPhotoUrl = widget.blogPosts[index].imageURL ?? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      color: Colors.grey[200],
-                    ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
-                      // tileColor: Color.fromRGBO(158, 158, 158, 100),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: FractionallySizedBox(
-                              // width: MediaQuery.of(context).size.width * 0.8,
-                              widthFactor: 0.8,
-                              child: Image.network(
-                                coverPhotoUrl,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                      Icons.error); // Show icon for failed images
-                                },
-                              ),
+      ),
+      body: Center(
+        child: Container(
+          width: 600,
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+          child: ListView.builder(
+            itemCount: widget.blogPosts.length,
+            itemBuilder: (BuildContext context, int index) {
+              String coverPhotoUrl =
+                  widget.blogPosts[index].imageURL ??
+                      'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
+
+              return Padding(
+                padding:
+                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Colors.grey[200],
+                  ),
+                  child: ListTile(
+                    contentPadding:
+                    EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: FractionallySizedBox(
+                            widthFactor: 0.8,
+                            child: Image.network(
+                              coverPhotoUrl,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                    Icons.error); // Show icon for failed images
+                              },
                             ),
                           ),
-                          SizedBox(height: 15), // Add some spacing between the image and title
-                          Text(
-                            widget.blogPosts[index].title,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(widget.blogPosts[index].description),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.favorite),
-                                onPressed: () {
-                                  if(!kIsWeb) { //avoid web browsers.
-                                    ScaffoldMessenger.of(context).
-                                    showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Liked'),
-                                          duration: Duration(milliseconds: 1000),
-                                        )
-                                    );
-                                    _likePost(context, widget.blogPosts[index].id); // Call like API when button is pressed
-                                    setState(() {
-                                      widget.blogPosts[index].likes++; // Increment likes count
-                                    });
-                                  }
-                                },
+                        ),
+                        SizedBox(height: 15),
+                        Text(
+                          widget.blogPosts[index].title,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(widget.blogPosts[index].description),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _likePost(index),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.favorite),
+                                  SizedBox(width: 8.0),
+                                  Text(widget.blogPosts[index].likes.toString()),
+                                ],
                               ),
-                              Text(
-
-                                  widget.blogPosts[index].likes.toString()
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.share),
-                                onPressed: () {
-                                  if(!kIsWeb) { //avoid web browsers.
-                                    ScaffoldMessenger.of(context).
-                                    showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Shared'),
-                                          duration: Duration(milliseconds: 1000),
-                                        )
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        if(!kIsWeb) { //avoid web browsers.
-                          ScaffoldMessenger.of(context).
-                          showSnackBar(
-                              const SnackBar(
-                                content: Text('Opening...'),
-                                duration: Duration(milliseconds: 500),
-                              )
-                          );
-                        }
-                      },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.share),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Shared'),
+                                    duration: Duration(milliseconds: 1000),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Opening...'),
+                          duration: Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        )
+        ),
+      ),
     );
   }
 
-  Text drawerTitle(UserData? userData){
-    if (_userData != null) {
-      // User is logged in
-      return Text('Welcome, ${userData!.username}!');
-    } else {// User is not logged in
+  Text drawerTitle(UserData? userData) {
+    if (userData != null) {
+      return Text('Welcome, ${userData.username}!');
+    } else {
       return const Text('Please log in to manage blog content.');
     }
-
-    // const Text(
-    //     'A simple blogging app by Sahan Perera',
-    //     style: TextStyle(
-    //     color: Colors.white,
-    //     fontSize: 24,
-    // )
   }
 
-  void _likePost(BuildContext context, int postId) async {
+  void _likePost(int index) async {
     try {
-      await ApiService.updatePostLikes(postId);
+      await ApiService.updatePostLikes(widget.blogPosts[index].id);
+      setState(() {
+        widget.blogPosts[index].likes++; // Increment likes count
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Liked'),
           duration: Duration(milliseconds: 1000),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to like post'),
           duration: Duration(milliseconds: 1000),
         ),
       );
     }
   }
+
 
   void _performLogout() async {
     await ApiService.performLogout();
