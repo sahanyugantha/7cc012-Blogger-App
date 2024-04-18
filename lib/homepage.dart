@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:blogger/loginpage.dart';
 import 'package:blogger/userdata.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,13 +10,11 @@ import 'ApiService.dart';
 import 'blog_post.dart';
 
 class MyHomePage extends StatefulWidget {
-  final UserData? userData;
   final List<BlogPost> blogPosts;
 
   const MyHomePage({
     Key? key,
-    this.userData,
-    required this.blogPosts
+    required this.blogPosts,
   }) : super(key: key);
 
   @override
@@ -23,10 +23,26 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  UserData?_userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    dynamic userDataString = await ApiService.getUserData();
+    print('USER DATA 1 ******************--------->>>>> $userDataString');
+    UserData userData = UserData.fromJson(userDataString);
+    setState(() {
+      _userData = userData;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -48,8 +64,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                child: drawerTitle(),
+                child: drawerTitle(_userData),
               ),
+              if(_userData == null)
               ListTile(
                 title: Text('Login'),
                 onTap: () {
@@ -60,12 +77,34 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
+              if(_userData == null)
               ListTile(
-                title: Text('About me'),
+                title: Text('Register'),
                 onTap: () {
                   Navigator.pop(context); // Close drawer
                 },
               ),
+              if(_userData != null)
+                ListTile(
+                  title: Text('Create Post'),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                  },
+                ),
+              if(_userData != null)
+                ListTile(
+                  title: Text('Dashboard'),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                  },
+                ),
+              if(_userData != null)
+                ListTile(
+                  title: Text('Logout'),
+                  onTap: () {
+                   _performLogout(); // logout
+                  },
+                ),
             ],
           ),
         ),
@@ -174,10 +213,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Text drawerTitle(){
-    if (widget.userData != null) {
+  Text drawerTitle(UserData? userData){
+    if (_userData != null) {
       // User is logged in
-      return Text('Welcome, ${widget.userData!.username}!');
+      return Text('Welcome, ${userData!.username}!');
     } else {// User is not logged in
       return const Text('Please log in to manage blog content.');
     }
@@ -207,5 +246,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     }
+  }
+
+  void _performLogout() async {
+    await ApiService.performLogout();
+    setState(() {
+      _userData = null;
+    });
   }
 }

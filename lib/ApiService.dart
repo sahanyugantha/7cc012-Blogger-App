@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:blogger/userdata.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'blog_post.dart';
 
 class ApiService {
@@ -28,6 +29,22 @@ class ApiService {
     }
   }
 
+  static Future<void> saveUserData(UserData? userData) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('USER DATA ********************** $userData');
+    try {
+      if (userData != null) {
+        // Convert UserData to JSON string and save to SharedPreferences
+        await prefs.setString('userData', jsonEncode(userData.toJson()));
+      } else {
+        // If userData is null, clear the saved data
+        await prefs.remove('userData');
+      }
+    } catch (e) {
+      print('ERROR USER DATA ********************** $e');
+    }
+  }
+
   static performLogin(String email, String password) async {
     try {
       final response = await http.post(
@@ -39,7 +56,11 @@ class ApiService {
       if (response.statusCode == 200) {
         // Successful login
         final userData = json.decode(response.body);
-        return UserData.fromJson(userData);
+        UserData userDataN = UserData.fromJson(userData);
+
+    // Save user data to SharedPreferences
+        await saveUserData(userDataN);
+        //return UserData.fromJson(userData);
       } else {
         // Failed to login
         throw Exception('Failed to login');
@@ -49,6 +70,18 @@ class ApiService {
       print('Error during login: $e');
       throw Exception('Error during login');
     }
+  }
+
+
+  static getUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString('userData');
+    return userDataString != null ? jsonDecode(userDataString) : null;
+  }
+
+  static performLogout() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userData');
   }
 
 }

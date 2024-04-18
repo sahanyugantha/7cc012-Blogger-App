@@ -17,8 +17,6 @@ class _LoginPageState extends State<LoginPage> {
     final TextEditingController _emailController = TextEditingController();
     final TextEditingController _passwordController = TextEditingController();
 
-
-
     return Scaffold(
         appBar: AppBar(
           title: const Text('Login')
@@ -85,14 +83,13 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) => MyHomePage(
-            userData: userData,
             blogPosts: blogPosts,
           ),
         ),
       );
 
     } catch (e) {
-      _showSnackBar("Login failed $e");
+      _showSnackBar("Login failed.. $e");
     }
 
 

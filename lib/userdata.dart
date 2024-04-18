@@ -19,4 +19,14 @@ class UserData {
       imageURL: json['image_url'],
     );
   }
+
+  // Convert UserData to a JSON-compatible Map
+   Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'image_url': imageURL,
+    };
+  }
 }
