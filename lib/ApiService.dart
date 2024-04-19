@@ -8,7 +8,8 @@ import 'dart:io';
 
 class ApiService {
   // static const String baseUrl = 'http://localhost:3000'; //  API base URL
-  static const String baseUrl = 'http://10.0.2.2:3000'; // localhost API base URL for Android
+  //static const String baseUrl = 'http://10.0.2.2:3000'; // localhost API base URL for Android
+  static const String baseUrl = 'http://192.168.0.188:3000'; // localhost API base URL of my network
 
   // Fetch all blog posts from the API
   static Future<List<BlogPost>> fetchBlogPosts() async {
@@ -92,7 +93,7 @@ class ApiService {
  */
   static Future<void> addPost(String title, String description, File? imageFile, int id) async {
     try {
-      var uri = Uri.parse('http://10.0.2.2:3000/posts');
+      var uri = Uri.parse('$baseUrl/posts');
       var request = http.MultipartRequest('POST', uri);
       request.fields['title'] = title;
       request.fields['description'] = description;

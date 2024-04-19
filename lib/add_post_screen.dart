@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:blogger/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ApiService.dart';
 import 'blog_post.dart';
@@ -16,26 +14,24 @@ class AddPostPage extends StatefulWidget {
 }
 
 class _AddPostPageState extends State<AddPostPage> {
-
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  File? _imageFile; // Holds the selected image file
-  int? _userId; // Holds the logged-in user's ID
-  bool _hasPermission = false;
+  File? _imageFile;
+  int? _userId;
+  bool _hasStoragePermission = false;
+  bool _hasCameraPermission = false;
+  bool _hasPhotosPermission = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserId();
-    _checkPermission();
+    _checkPermissions();
   }
 
   Future<void> _loadUserId() async {
-    dynamic userDataString = await ApiService.getUserData();
-    UserData userData = UserData.fromJson(userDataString);
-    setState(() {
-      _userId = userData.id;
-    });
+    // Simulate fetching user ID from an API or local storage
+    _userId = 1; // Replace with your actual logic
   }
 
   @override
@@ -45,55 +41,80 @@ class _AddPostPageState extends State<AddPostPage> {
         title: Text('Add New Post'),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  _pickImage(); // Open image picker on tap
-                },
-                child: _imageFile != null
-                    ? Image.file(_imageFile!)
-                    : Placeholder(
-                  fallbackHeight: 200.0,
-                  color: Colors.grey,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () {
+                _pickImage(ImageSource.gallery);
+              },
+              child: _imageFile != null
+                  ? Image.file(_imageFile!)
+                  : Placeholder(
+                fallbackHeight: 200.0,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    _pickImage(ImageSource.gallery);
+                  },
+                  child: const Text('Choose from Gallery'),
                 ),
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: 'Title'),
-              ),
-              SizedBox(height: 16.0),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
-              ),
-              SizedBox(height: 24.0),
-              ElevatedButton(
-                onPressed: () {
-                  _submitPost();
-                },
-                child: Text('Submit'),
-              ),
-            ],
-          ),
+                ElevatedButton(
+                  onPressed: () {
+                    _pickImage(ImageSource.camera);
+                  },
+                  child: const Text('Take Photo'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            const SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: () {
+                _submitPost();
+              },
+              child: const Text('Submit'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _pickImage() async {
-    if (!_hasPermission) {
-      // Handle permission denied
-      print("NO PERMISSION *****************************");
+  Future<void> _pickImage(ImageSource source) async {
+    bool hasPermission = false;
+
+    if (source == ImageSource.gallery) {
+      hasPermission = _hasStoragePermission || _hasPhotosPermission;
+    } else if (source == ImageSource.camera) {
+      hasPermission = _hasCameraPermission;
+    }
+
+    if (!hasPermission) {
+      _showSnackBar(
+        source == ImageSource.camera ? 'Camera permission required.' : 'Storage permission required.',
+      );
       return;
     }
 
     final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    final pickedImage = await picker.pickImage(source: source);
 
     if (pickedImage != null) {
       setState(() {
@@ -102,58 +123,48 @@ class _AddPostPageState extends State<AddPostPage> {
     }
   }
 
-  Future<void> _checkPermission() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
-    }
+  Future<void> _checkPermissions() async {
+    final storageStatus = await Permission.storage.request();
+    final hasStoragePermission = storageStatus.isGranted;
+
+    final cameraStatus = await Permission.camera.request();
+    final hasCameraPermission = cameraStatus.isGranted;
+
+    final photosStatus = await Permission.photos.request();
+    final hasPhotosPermission = photosStatus.isGranted;
+
     setState(() {
-      _hasPermission = status.isGranted;
+      _hasStoragePermission = hasStoragePermission;
+      _hasCameraPermission = hasCameraPermission;
+      _hasPhotosPermission = hasPhotosPermission;
     });
   }
 
   void _submitPost() {
-    // Get values from text controllers
-    String title = _titleController.text.trim();
-    String description = _descriptionController.text.trim();
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
 
-    print("DATA ************---> title $title description $description userID $_userId");
-
-    // Validate input (add more validation as needed)
-   // if (title.isEmpty || description.isEmpty || _imageFile == null || _userId == null) {
-    if (title.isEmpty || description.isEmpty || _userId == null) {
-      // Handle validation error (show error message)
-      _showSnackBar("Please provide title, description, and image.");
+    if (title.isEmpty || description.isEmpty || _imageFile == null || _userId == null) {
+      _showSnackBar('Please provide title, description, and image.');
       return;
     }
 
-    // Send data to API
-    _sendPostToApi(title, description, _imageFile, _userId!);
+    _sendPostToApi(title, description, _imageFile!, _userId!);
   }
 
-  void _sendPostToApi(String title, String description, File? imageFile, int userId) {
-    ApiService.addPost(title, description, imageFile, userId)
-        .then((_) async {
-      _showSnackBar("Blog post created!");
-      // Clear input fields and image after successful submission
-      _titleController.clear();
-      _descriptionController.clear();
-      setState(() {
-        _imageFile = null;
-      });
-
+  void _sendPostToApi(String title, String description, File imageFile, int userId) {
+    ApiService.addPost(title, description, imageFile, userId).then((_) async {
+      _showSnackBar('Blog post created!');
+      _clearInputs();
       final List<BlogPost> blogPosts = await ApiService.fetchBlogPosts();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => MyHomePage(
-            blogPosts: blogPosts,
-          ),
+          builder: (context) => MyHomePage(blogPosts: blogPosts),
         ),
       );
-    })
-        .catchError((error) {
-      _showSnackBar("Failed to create blog post. Error: ${error.toString()}");
+    }).catchError((error) {
+      _showSnackBar('Failed to create blog post. Error: ${error.toString()}');
     });
   }
 
@@ -161,8 +172,23 @@ class _AddPostPageState extends State<AddPostPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  void _clearInputs() {
+    _titleController.clear();
+    _descriptionController.clear();
+    setState(() {
+      _imageFile = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }
