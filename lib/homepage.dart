@@ -1,3 +1,4 @@
+import 'package:blogger/add_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:blogger/loginpage.dart';
@@ -80,7 +81,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text('Create Post'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AddPostPage()),
+                  );
                 },
               ),
               ListTile(

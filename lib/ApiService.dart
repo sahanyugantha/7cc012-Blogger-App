@@ -3,6 +3,8 @@ import 'package:blogger/userdata.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'blog_post.dart';
+import 'dart:async';
+import 'dart:io';
 
 class ApiService {
   // static const String baseUrl = 'http://localhost:3000'; //  API base URL
@@ -83,5 +85,46 @@ class ApiService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('userData');
   }
+
+
+/**
+ * Posts Api Calls
+ */
+  static Future<void> addPost(String title, String description, File? imageFile, int id) async {
+    try {
+      var uri = Uri.parse('http://10.0.2.2:3000/posts');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields['title'] = title;
+      request.fields['description'] = description;
+      request.fields['userId'] = id.toString();
+
+      if (imageFile != null) {
+        var imageStream = http.ByteStream(imageFile.openRead());
+        var length = await imageFile.length();
+        var multipartFile = http.MultipartFile(
+          'image',
+          imageStream,
+          length,
+          filename: imageFile.path.split('/').last,
+        );
+        request.files.add(multipartFile);
+      }
+
+      var response = await request.send();
+
+      if (response.statusCode == 201) {
+        // Post successfully added
+        print('Post added successfully');
+      } else {
+        // Handle error
+        int code = response.statusCode;
+        print('Failed to add post ---  response = $code');
+      }
+    } catch (e) {
+      // Handle network or other errors
+      print('Error: $e');
+    }
+  }
+
 
 }
