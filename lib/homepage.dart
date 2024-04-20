@@ -23,13 +23,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late List<BlogPost> _blogPosts;
+  List<BlogPost> _filteredPosts = [];
   UserData? _userData;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _blogPosts = [];
+    _filteredPosts = [];
     _fetchBlogPosts();
     _loadUserData();
   }
@@ -46,12 +49,37 @@ class _MyHomePageState extends State<MyHomePage> {
       final List<BlogPost> posts = await ApiService.fetchBlogPosts();
       setState(() {
         _blogPosts = posts;
+        _filteredPosts = List.from(posts); // Initialize filtered posts for search
       });
     } catch (e) {
       print('Failed to fetch blog posts: $e');
     }
   }
 
+  //filter posts with user query
+  void _filterPosts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredPosts = List.from(_blogPosts); // Reset to all posts
+      } else {
+        _filteredPosts = _blogPosts
+            .where((post) =>
+        post.title.toLowerCase().contains(query.toLowerCase()) ||
+            post.description.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  // Function to limit the number of words displayed
+  String limitWords(String input, int wordLimit) {
+    List<String> words = input.split(' ');
+    if (words.length <= wordLimit) {
+      return input;
+    } else {
+      return words.sublist(0, wordLimit).join(' ') + ' ...';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +94,17 @@ class _MyHomePageState extends State<MyHomePage> {
             _scaffoldKey.currentState!.openDrawer();
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: BlogPostSearchDelegate(_blogPosts),
+              );
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -131,6 +170,10 @@ class _MyHomePageState extends State<MyHomePage> {
               //         'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
 
               final BlogPost post = _blogPosts[index];
+
+              //limit description words to 20
+              String limitedDescription = limitWords(post.description, 20);
+
               //final bool isLiked = post.likedBy!.contains(1);
               final bool isLiked = _userData != null && post.likedBy?.contains(_userData!.id) == true;
 
@@ -140,6 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
               } else {
                 coverPhotoUrl = '${ApiService.baseUrl}/${_blogPosts[index].imageURL}';
               }
+
 
               return Padding(
                 padding:
@@ -173,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           _blogPosts[index].title,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(_blogPosts[index].description),
+                        Text(limitedDescription),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -337,6 +381,92 @@ class _MyHomePageState extends State<MyHomePage> {
       await Share.share('$title\n$description');
     }
   }
-
-
 }
+
+
+class BlogPostSearchDelegate extends SearchDelegate<String> {
+  final List<BlogPost> blogPosts;
+
+  BlogPostSearchDelegate(this.blogPosts);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  // Function to limit the number of words displayed
+  String limitWords(String input, int wordLimit) {
+    List<String> words = input.split(' ');
+    if (words.length <= wordLimit) {
+      return input;
+    } else {
+      return words.sublist(0, wordLimit).join(' ') + ' ...';
+    }
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final List<BlogPost> suggestions = query.isEmpty
+        ? [] // If query is empty, show no suggestions
+        : blogPosts.where((post) =>
+    post.title.toLowerCase().contains(query.toLowerCase()) ||
+        post.description.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (BuildContext context, int index) {
+        // Limit the number of words displayed in the description
+        String limitedDescription = limitWords(suggestions[index].description, 10);
+        return ListTile(
+          title: Text(suggestions[index].title),
+          subtitle: Text(limitedDescription),
+          onTap: () {
+            close(context, suggestions[index].title);
+          },
+        );
+      },
+    );
+  }
+
+
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final List<BlogPost> results = blogPosts.where((post) =>
+    post.title.toLowerCase().contains(query.toLowerCase()) ||
+        post.description.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (BuildContext context, int index) {
+        // Limit the number of words displayed in the description
+        String limitedDescription = limitWords(results[index].description, 15);
+        return ListTile(
+          title: Text(results[index].title),
+          subtitle: Text(limitedDescription),
+          onTap: () {
+            close(context, results[index].title);
+          },
+        );
+      },
+    );
+  }
+}
+
