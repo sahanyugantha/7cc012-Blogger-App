@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:blogger/add_post_screen.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,10 @@ import 'package:blogger/loginpage.dart';
 import 'package:blogger/userdata.dart';
 import 'package:blogger/ApiService.dart';
 import 'package:blogger/blog_post.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 
 class MyHomePage extends StatefulWidget {
 
@@ -188,12 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             IconButton(
                               icon: Icon(Icons.share),
                               onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Shared'),
-                                    duration: Duration(milliseconds: 1000),
-                                  ),
-                                );
+                                _sharePost(context, post);
                               },
                             ),
                           ],
@@ -297,5 +297,46 @@ class _MyHomePageState extends State<MyHomePage> {
       print('Failed to perform logout: $e');
     }
   }
+
+
+  void _sharePost(BuildContext context, BlogPost post) async {
+    String title = post.title; // No need to encode the title for sharing
+    String description = post.description;
+    String? imageURL = post.imageURL;
+
+    if (imageURL != null) {
+      try {
+        final temp_imageURL = "${ApiService.baseUrl}/$imageURL";
+        final response = await http.get(Uri.parse(temp_imageURL));
+        if (response.statusCode == 200) {
+          final Uint8List bytes = response.bodyBytes;
+
+          // Get the temporary directory to save the image
+          final Directory tempDir = await getTemporaryDirectory();
+          final String imagePath = '${tempDir.path}/image.jpg';
+
+          // Write image bytes to the temporary file
+          File imageFile = File(imagePath);
+          await imageFile.writeAsBytes(bytes);
+
+          // Share the post with the image file
+          await Share.shareFiles([imagePath], text: '$title\n$description');
+        } else {
+          throw Exception('Failed to download image: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error sharing post: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing post.'),
+          ),
+        );
+      }
+    } else {
+      // Share post without an image
+      await Share.share('$title\n$description');
+    }
+  }
+
 
 }
