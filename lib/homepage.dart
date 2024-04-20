@@ -210,16 +210,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _likePost(int index) async {
     try {
-      await ApiService.updatePostLikes(widget.blogPosts[index].id);
-      setState(() {
-        widget.blogPosts[index].likes++; // Increment likes count
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Liked'),
-          duration: Duration(milliseconds: 1000),
-        ),
-      );
+      if(_userData == null){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      } else {
+        _loadUserData();
+        await ApiService.updatePostLikes(widget.blogPosts[index].id, _userData!.id);
+        setState(() {
+          widget.blogPosts[index].likes++; // Increment likes count
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Liked'),
+            duration: Duration(milliseconds: 1000),
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

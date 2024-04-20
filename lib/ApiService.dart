@@ -29,13 +29,40 @@ class ApiService {
   }
 
   // Update likes for a specific post
-  static Future<void> updatePostLikes(int postId) async {
-    final response = await http.put(Uri.parse('$baseUrl/posts/$postId/like'));
+  // static Future<void> updatePostLikes(int postId) async {
+  //   final response = await http.put(Uri.parse('$baseUrl/posts/$postId/like'));
+  //
+  //   if (response.statusCode != 200) {
+  //     throw Exception('Failed to update post likes');
+  //   }
+  // }
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update post likes');
+  // Update likes for a specific post
+  static Future<void> updatePostLikes(int postId, int userId) async {
+    try {
+      print("**************** LIKED by $userId");
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/posts/$postId/like'),
+        headers: {
+          'Content-Type': 'application/json', // Set content type to JSON
+        },
+        body: jsonEncode({
+          'userId': userId.toString(), // Include userId in the request body
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Post liked successfully');
+      } else {
+        throw Exception('Failed to update post likes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating post likes: $e');
+      throw Exception('Failed to update post likes: $e');
     }
   }
+
 
   static Future<void> saveUserData(UserData? userData) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
