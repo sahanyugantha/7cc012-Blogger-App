@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:blogger/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -30,8 +31,9 @@ class _AddPostPageState extends State<AddPostPage> {
   }
 
   Future<void> _loadUserId() async {
-    // Simulate fetching user ID from an API or local storage
-    _userId = 1; // Replace with your actual logic
+    dynamic userDataString = await ApiService.getUserData();
+    UserData userData = UserData.fromJson(userDataString);
+    _userId = userData.id;
   }
 
   @override
@@ -144,15 +146,15 @@ class _AddPostPageState extends State<AddPostPage> {
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
 
-    if (title.isEmpty || description.isEmpty || _imageFile == null || _userId == null) {
-      _showSnackBar('Please provide title, description, and image.');
+    if (title.isEmpty || _userId == null) {
+      _showSnackBar('Please provide title');
       return;
     }
 
-    _sendPostToApi(title, description, _imageFile!, _userId!);
+    _sendPostToApi(title, description, _imageFile, _userId!);
   }
 
-  void _sendPostToApi(String title, String description, File imageFile, int userId) {
+  void _sendPostToApi(String title, String description, File? imageFile, int userId) {
     ApiService.addPost(title, description, imageFile, userId).then((_) async {
       _showSnackBar('Blog post created!');
       _clearInputs();

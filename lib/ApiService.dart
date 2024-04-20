@@ -11,6 +11,11 @@ class ApiService {
   //static const String baseUrl = 'http://10.0.2.2:3000'; // localhost API base URL for Android
   static const String baseUrl = 'http://192.168.0.188:3000'; // localhost API base URL of my network
 
+  /// FOR emojis
+  /// ALTER DATABASE blogdb CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  /// ALTER TABLE post CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  /// ALTER TABLE user CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
   // Fetch all blog posts from the API
   static Future<List<BlogPost>> fetchBlogPosts() async {
     final response = await http.get(Uri.parse('$baseUrl/posts'));
