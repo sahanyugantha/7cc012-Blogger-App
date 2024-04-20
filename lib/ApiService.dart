@@ -18,13 +18,30 @@ class ApiService {
 
   // Fetch all blog posts from the API
   static Future<List<BlogPost>> fetchBlogPosts() async {
-    final response = await http.get(Uri.parse('$baseUrl/posts'));
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/posts'));
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonData = jsonDecode(response.body);
-      return jsonData.map((data) => BlogPost.fromJson(data)).toList();
-    } else {
-      throw Exception('Failed to load blog posts');
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        List<BlogPost> posts = jsonData.map((data) => BlogPost.fromJson(data)).toList();
+
+        // Initialize likedBy lists based on user's like status
+        UserData? userData = await getUserData();
+        int? userId = userData?.id;
+
+        for (var post in posts) {
+          post.likedBy = post.likedBy ?? [];
+          if (userId != null && post.likedBy!.contains(userId)) {
+            post.likedBy!.add(userId);
+          }
+        }
+
+        return posts;
+      } else {
+        throw Exception('Failed to load blog posts');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch blog posts: $e');
     }
   }
 
@@ -60,6 +77,23 @@ class ApiService {
     } catch (e) {
       print('Error updating post likes: $e');
       throw Exception('Failed to update post likes: $e');
+    }
+  }
+
+  static Future<void> removePostLike(int postId, int userId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/posts/$postId/like/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        print('Post like removed successfully');
+      } else {
+        throw Exception('Failed to remove post like: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error removing post like: $e');
+      throw Exception('Failed to remove post like: $e');
     }
   }
 
@@ -108,10 +142,21 @@ class ApiService {
   }
 
 
-  static getUserData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userDataString = prefs.getString('userData');
-    return userDataString != null ? jsonDecode(userDataString) : null;
+  static Future<UserData?> getUserData() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userDataString = prefs.getString('userData');
+
+      if (userDataString != null) {
+        final Map<String, dynamic> userDataMap = jsonDecode(userDataString);
+        return UserData.fromJson(userDataMap); // Convert JSON map to UserData object
+      } else {
+        return null; // Return null if no user data is found
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      return null; // Return null in case of an error
+    }
   }
 
   static performLogout() async {

@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else {
             final blogPosts = snapshot.data ?? [];
-              return MyHomePage(blogPosts: blogPosts);
+              return MyHomePage();
             }
           },
       ),

@@ -162,7 +162,7 @@ class _AddPostPageState extends State<AddPostPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => MyHomePage(blogPosts: blogPosts),
+          builder: (context) => MyHomePage(),
         ),
       );
     }).catchError((error) {

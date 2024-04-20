@@ -83,13 +83,13 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) => MyHomePage(
-            blogPosts: blogPosts,
           ),
         ),
       );
 
     } catch (e) {
       _showSnackBar("Login failed.. $e");
+      print("Login failed.. $e");
     }
 
 

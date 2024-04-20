@@ -4,6 +4,7 @@ class BlogPost {
   final String description;
   final String? imageURL;
   int likes;
+  List<int>? likedBy;
 
   BlogPost({
     required this.id,
@@ -11,6 +12,7 @@ class BlogPost {
     required this.description,
     this.imageURL,
     this.likes = 0,
+    this.likedBy,
   });
 
   factory BlogPost.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class BlogPost {
       description: json['description'] ?? '',
       imageURL: json['image'],
       likes: json['likes'] ?? 0,
+      likedBy: json['likedBy'] != null ? List<int>.from(json['likedBy']) : null,
     );
   }
 }

@@ -7,35 +7,44 @@ import 'package:blogger/ApiService.dart';
 import 'package:blogger/blog_post.dart';
 
 class MyHomePage extends StatefulWidget {
-  final List<BlogPost> blogPosts;
 
-  const MyHomePage({
-    Key? key,
-    required this.blogPosts,
-  }) : super(key: key);
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late List<BlogPost> _blogPosts;
   UserData? _userData;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    _blogPosts = [];
+    _fetchBlogPosts();
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
-    dynamic userDataString = await ApiService.getUserData();
-    print('USER DATA: $userDataString');
-    UserData userData = UserData.fromJson(userDataString);
+    final userData = await ApiService.getUserData();
     setState(() {
       _userData = userData;
     });
   }
+
+  Future<void> _fetchBlogPosts() async {
+    try {
+      final List<BlogPost> posts = await ApiService.fetchBlogPosts();
+      setState(() {
+        _blogPosts = posts;
+      });
+    } catch (e) {
+      print('Failed to fetch blog posts: $e');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,17 +117,21 @@ class _MyHomePageState extends State<MyHomePage> {
           width: 600,
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
           child: ListView.builder(
-            itemCount: widget.blogPosts.length,
+            itemCount: _blogPosts.length,
             itemBuilder: (BuildContext context, int index) {
               // String coverPhotoUrl =
               //     widget.blogPosts[index].imageURL ??
               //         'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg';
 
+              final BlogPost post = _blogPosts[index];
+              //final bool isLiked = post.likedBy!.contains(1);
+              final bool isLiked = _userData != null && post.likedBy?.contains(_userData!.id) == true;
+
               String coverPhotoUrl = "";
-              if(widget.blogPosts[index].imageURL == null || widget.blogPosts[index].imageURL == "NA"){
+              if(_blogPosts[index].imageURL == null || _blogPosts[index].imageURL == "NA"){
                 coverPhotoUrl = '${ApiService.baseUrl}/images/no-image.jpg';
               } else {
-                coverPhotoUrl = '${ApiService.baseUrl}/${widget.blogPosts[index].imageURL}';
+                coverPhotoUrl = '${ApiService.baseUrl}/${_blogPosts[index].imageURL}';
               }
 
               return Padding(
@@ -150,20 +163,23 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         SizedBox(height: 15),
                         Text(
-                          widget.blogPosts[index].title,
+                          _blogPosts[index].title,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(widget.blogPosts[index].description),
+                        Text(_blogPosts[index].description),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             GestureDetector(
-                              onTap: () => _likePost(index),
+                              onTap: () => _toggleLike(post, isLiked),
                               child: Row(
                                 children: [
-                                  Icon(Icons.favorite),
+                              Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: isLiked ? Colors.red : Colors.grey,
+                              ),
                                   SizedBox(width: 8.0),
-                                  Text(widget.blogPosts[index].likes.toString()),
+                                  Text(post.likes.toString()),
                                 ],
                               ),
                             ),
@@ -208,41 +224,51 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _likePost(int index) async {
+
+  Future<void> _toggleLike(BlogPost post, bool isLiked) async {
     try {
-      if(_userData == null){
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
-      } else {
-        _loadUserData();
-        await ApiService.updatePostLikes(widget.blogPosts[index].id, _userData!.id);
-        setState(() {
-          widget.blogPosts[index].likes++; // Increment likes count
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Liked'),
-            duration: Duration(milliseconds: 1000),
-          ),
-        );
+      final userId = _userData?.id; // Use optional chaining for safety
+
+      if (userId != null) {
+        final postId = post.id;
+
+        if (post.likedBy!.contains(userId)) {
+          await ApiService.removePostLike(postId, userId);
+          setState(() {
+            post.likedBy!.remove(userId);
+            post.likes--;
+          });
+        } else {
+          await ApiService.updatePostLikes(postId, userId);
+          setState(() {
+            post.likedBy!.add(userId);
+            post.likes++;
+          });
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to like post'),
-          duration: Duration(milliseconds: 1000),
-        ),
-      );
+      print('Failed to toggle like: $e');
     }
   }
 
 
-  void _performLogout() async {
-    await ApiService.performLogout();
-    setState(() {
-      _userData = null;
-    });
+
+
+
+
+
+  Future<void> _performLogout() async {
+    try {
+      await ApiService.performLogout();
+      setState(() {
+        _userData = null; // Clear user data after logout
+        _blogPosts.forEach((post) {
+          post.likedBy = []; // Clear likedBy lists after logout
+        });
+      });
+    } catch (e) {
+      print('Failed to perform logout: $e');
+    }
   }
+
 }
