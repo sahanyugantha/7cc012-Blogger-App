@@ -4,7 +4,7 @@ class BlogPost {
   final String description;
   final String? imageURL;
   int likes;
-  List<int>? likedBy;
+  Set<int>? likedBy;
 
   BlogPost({
     required this.id,
@@ -22,7 +22,12 @@ class BlogPost {
       description: json['description'] ?? '',
       imageURL: json['image'],
       likes: json['likes'] ?? 0,
-      likedBy: json['likedBy'] != null ? List<int>.from(json['likedBy']) : null,
+      likedBy: json['likedBy'] != null ? Set<int>.from(json['likedBy']) : null,
     );
+  }
+
+  @override
+  String toString() {
+    return 'BlogPost{id: $id, title: $title, description: $description, imageURL: $imageURL, likes: $likes, likedBy: $likedBy}';
   }
 }

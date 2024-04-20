@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:blogger/add_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -232,28 +234,53 @@ class _MyHomePageState extends State<MyHomePage> {
       if (userId != null) {
         final postId = post.id;
 
-        if (post.likedBy!.contains(userId)) {
+        if (isLiked) {
+          // Unlike: Remove like association
           await ApiService.removePostLike(postId, userId);
           setState(() {
             post.likedBy!.remove(userId);
             post.likes--;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Post unliked'),
+              duration: Duration(seconds: 3),
+            ),
+          );
         } else {
+          // Like: Add like association
           await ApiService.updatePostLikes(postId, userId);
           setState(() {
             post.likedBy!.add(userId);
             post.likes++;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Post liked'),
+              duration: Duration(seconds: 3),
+            ),
+          );
         }
       }
     } catch (e) {
       print('Failed to toggle like: $e');
+      if (e.toString().contains('404')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to remove like: Post not found'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to toggle like'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
-
-
-
-
 
 
 
@@ -263,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _userData = null; // Clear user data after logout
         _blogPosts.forEach((post) {
-          post.likedBy = []; // Clear likedBy lists after logout
+          post.likedBy?.clear(); // Clear likedBy lists after logout
         });
       });
     } catch (e) {

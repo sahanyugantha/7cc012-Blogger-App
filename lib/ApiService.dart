@@ -30,12 +30,12 @@ class ApiService {
         int? userId = userData?.id;
 
         for (var post in posts) {
-          post.likedBy = post.likedBy ?? [];
+          post.likedBy = post.likedBy ?? {};
           if (userId != null && post.likedBy!.contains(userId)) {
+            print("YEAH-----------POST ${post.id} ---------------> $userId");
             post.likedBy!.add(userId);
           }
         }
-
         return posts;
       } else {
         throw Exception('Failed to load blog posts');
@@ -54,11 +54,8 @@ class ApiService {
   //   }
   // }
 
-  // Update likes for a specific post
   static Future<void> updatePostLikes(int postId, int userId) async {
     try {
-      print("**************** LIKED by $userId");
-
       final response = await http.put(
         Uri.parse('$baseUrl/posts/$postId/like'),
         headers: {
@@ -89,13 +86,14 @@ class ApiService {
       if (response.statusCode == 200) {
         print('Post like removed successfully');
       } else {
-        throw Exception('Failed to remove post like: ${response.statusCode}');
+        throw Exception('Failed to remove post like: ${response.statusCode} - ${response.reasonPhrase}');
       }
     } catch (e) {
       print('Error removing post like: $e');
       throw Exception('Failed to remove post like: $e');
     }
   }
+
 
 
   static Future<void> saveUserData(UserData? userData) async {
