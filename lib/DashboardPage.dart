@@ -16,6 +16,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   UserData? _userData;
   List<BlogPost> _userPosts = [];
+  int noOfPosts = 0;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final userPosts = await ApiService.fetchUserPosts(userId);
     setState(() {
       _userPosts = userPosts;
+      noOfPosts = _userPosts.length;
     });
   }
 
@@ -47,42 +49,53 @@ class _DashboardPageState extends State<DashboardPage> {
         title: Text('Dashboard'),
       ),
       body: _userData == null
-          ? Center(
-        child: CircularProgressIndicator(),
-      )
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : (noOfPosts <= 0)
+          ? const Center(
+              child: Text(
+                "You don't have any post",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
           : ListView.builder(
-        itemCount: _userPosts.length,
-        itemBuilder: (context, index) {
-          final post = _userPosts[index];
-          return ListTile(
-            title: Text(post.title),
-            subtitle: Text(
-                'Posted on ${_formatDateTime(post.createTime)} by ${post.author}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
-                    ).then((_){
-                      _fetchUserPosts(post.userId);
-                    });;
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    _showDeleteConfirmationDialog(post);
-                  },
-                ),
-              ],
+              itemCount: _userPosts.length,
+              itemBuilder: (context, index) {
+                final post = _userPosts[index];
+                return ListTile(
+                  title: Text(post.title),
+                  subtitle: Text(
+                      'Posted on ${_formatDateTime(post.createTime)} by ${post.author}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
+                          ).then((_){
+                            _fetchUserPosts(post.userId);
+                          });;
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(post);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
