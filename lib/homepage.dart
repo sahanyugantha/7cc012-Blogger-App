@@ -438,6 +438,10 @@ class BlogPostSearchDelegate extends SearchDelegate<String> {
     }
   }
 
+  // Future<void> _refreshBlogPosts() async {
+  //   await _fetchBlogPosts(); // Fetch updated blog posts
+  // }
+
   @override
   Widget buildSuggestions(BuildContext context) {
     final List<BlogPost> suggestions = query.isEmpty
