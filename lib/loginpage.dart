@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 24.0),
+              const SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: () {
                   // Handle login button press
@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
     } catch (e) {
-      _showSnackBar("Login failed.. $e");
+      _showSnackBar("Login failed. Please check email and password");
       print("Login failed.. $e");
     }
 

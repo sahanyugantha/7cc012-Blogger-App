@@ -195,6 +195,55 @@ class ApiService {
     }
   }
 
+  static Future<void> changeUsername(int id, String username) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/change-username/$id'),
+        body: json.encode({
+          'username': username,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        // update successful
+        print('Username changed successfully');
+      } else {
+        // update failed
+        throw Exception('Failed to change username: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Exception occurred during updating
+      print('Error during updating: $e');
+      throw Exception('Error during updating');
+    }
+  }
+
+  static Future<void> changePassword(int id, String oldPassword, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/change-password/$id'),
+        body: json.encode({
+          'oldpassword': oldPassword,
+          'newpassword': newPassword,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        // Password change successful
+        print('Password changed successfully');
+      } else {
+        // Password change failed
+        throw Exception('Failed to change password: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Exception occurred during updating
+      print('Error during updating: $e');
+      throw Exception('Error during updating');
+    }
+  }
+
 
   static Future<UserData?> getUserData() async {
     try {

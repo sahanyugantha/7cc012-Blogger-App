@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:blogger/DashboardPage.dart';
 import 'package:blogger/add_post_screen.dart';
 import 'package:blogger/user_registration_page.dart';
+import 'package:blogger/user_settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:blogger/loginpage.dart';
@@ -147,7 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => AddPostPage()),
-                  );
+                  ).then((_){
+                    _fetchBlogPosts();
+                  });
                 },
               ),
               ListTile(
@@ -168,6 +171,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: Text('Logout'),
                 onTap: () {
                   _performLogout();
+                },
+              ),
+              ListTile(
+                title: Text('Settings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserSettingsPage(userData: _userData!)),
+                  );
                 },
               ),
             ],

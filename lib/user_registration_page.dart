@@ -20,35 +20,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
       appBar: AppBar(
         title: Text('User Registration'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 32.0),
-            ElevatedButton(
-              onPressed: () {
-                _registerUser();
-              },
-              child: Text('Register'),
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+              ),
+              SizedBox(height: 16.0),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              SizedBox(height: 16.0),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              SizedBox(height: 32.0),
+              ElevatedButton(
+                onPressed: () {
+                  _registerUser();
+                },
+                child: Text('Register'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -61,9 +63,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     String password = _passwordController.text.trim();
     String imageUrl = "NA"; //TODO: future implementations
 
-    // Validate user input (you can add more validation logic here)
 
-    // Example: Minimum length validation for password
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -74,7 +74,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
 
     // Perform user registration API call
-    // Replace ApiService.registerUser with your actual registration API method
     try {
       await ApiService.registerUser(username, email, password, imageUrl);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +81,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           content: Text('Registration successful. Please log in.'),
         ),
       );
-      Navigator.pop(context); // Navigate back to previous screen (e.g., login page)
+      Navigator.pop(context); // Navigate back to previous screen
     } catch (e) {
       print('Registration failed: $e');
       ScaffoldMessenger.of(context).showSnackBar(
