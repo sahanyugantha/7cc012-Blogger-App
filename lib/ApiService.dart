@@ -216,7 +216,7 @@ class ApiService {
 
       var response = await request.send();
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         // Post successfully added
         print('Post added successfully');
       } else {
@@ -267,5 +267,24 @@ class ApiService {
     }
   }
 
+  static Future<void> deletePost(int id) async {
+    try {
+      var uri = Uri.parse('$baseUrl/posts/$id');
+      var request = http.Request('DELETE', uri);
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        // Post successfully added
+        print('Post deleted successfully');
+      } else {
+        int code = response.statusCode;
+        print('Failed to remove post ---  response = $code');
+      }
+    } catch (e) {
+      // Handle network or other errors
+      print('Error: $e');
+    }
+  }
 
 }

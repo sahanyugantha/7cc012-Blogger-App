@@ -154,7 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                       builder: (context) => DashboardPage(),
                     ),
-                  );
+                  ).then((_){
+                    _fetchBlogPosts();
+                  });
                 },
               ),
               ListTile(

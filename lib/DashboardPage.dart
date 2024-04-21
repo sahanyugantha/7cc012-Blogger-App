@@ -129,8 +129,9 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  void _deletePost(BlogPost post) {
+  void _deletePost(BlogPost post) async{
     // Implement post deletion logic (e.g., call API)
+    await ApiService.deletePost(post.id);
     setState(() {
       _userPosts.remove(post);
     });
