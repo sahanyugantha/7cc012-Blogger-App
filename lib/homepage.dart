@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:blogger/DashboardPage.dart';
 import 'package:blogger/add_post_screen.dart';
+import 'package:blogger/user_registration_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:blogger/loginpage.dart';
@@ -132,7 +133,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ListTile(
                 title: Text('Register'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegistrationPage()),
+                  );
+
                 },
               ),
             ] else ...[

@@ -167,6 +167,34 @@ class ApiService {
     }
   }
 
+  static Future<void> registerUser(String username, String email, String password, String imageUrl) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users'),
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'imageUrl': imageUrl,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 201) {
+        // Registration successful
+        print('User registered successfully');
+      } else {
+        // Registration failed
+
+        throw Exception('Failed to register: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Exception occurred during registration
+      print('Error during registration: $e');
+      throw Exception('Error during registration');
+    }
+  }
+
 
   static Future<UserData?> getUserData() async {
     try {
