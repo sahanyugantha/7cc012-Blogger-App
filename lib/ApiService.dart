@@ -140,7 +140,7 @@ class ApiService {
     }
   }
 
-  static performLogin(String email, String password) async {
+  static Future<bool> performLogin(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/users/login'),
@@ -156,6 +156,7 @@ class ApiService {
     // Save user data to SharedPreferences
         await saveUserData(userDataN);
         //return UserData.fromJson(userData);
+        return true;
       } else {
         // Failed to login
         throw Exception('Failed to login');
@@ -166,6 +167,12 @@ class ApiService {
       throw Exception('Error during login');
     }
   }
+
+  static performLogout() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userData');
+  }
+
 
   static Future<void> registerUser(String username, String email, String password, String imageUrl) async {
     try {
@@ -219,6 +226,31 @@ class ApiService {
     }
   }
 
+  static Future<void> deleteUser(int id, String email, String password) async {
+    try {
+
+      if(await performLogin(email, password)) {
+        final response = await http.delete(
+          Uri.parse('$baseUrl/users/$id'),
+          headers: {'Content-Type': 'application/json'},
+        );
+
+        if (response.statusCode == 200) {
+          // user deleted successful
+          print('User deleted successfully');
+        } else {
+          // Password change failed
+          throw Exception('Failed to delete user: ${response.statusCode}');
+        }
+      } else {
+        throw Exception('Incorrect password');
+      }
+    } catch (e) {
+      // Exception occurred during updating
+      throw Exception('Error during deleting user $e');
+    }
+  }
+
   static Future<void> changePassword(int id, String oldPassword, String newPassword) async {
     try {
       final response = await http.post(
@@ -244,7 +276,6 @@ class ApiService {
     }
   }
 
-
   static Future<UserData?> getUserData() async {
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -262,15 +293,9 @@ class ApiService {
     }
   }
 
-  static performLogout() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userData');
-  }
 
 
-/**
- * Posts Api Calls
- */
+/// *************<<<<<< Posts Api Calls >>>>>>>>******************* ///
   static Future<void> addPost(String title, String description, File? imageFile, int id) async {
     try {
       var uri = Uri.parse('$baseUrl/posts');

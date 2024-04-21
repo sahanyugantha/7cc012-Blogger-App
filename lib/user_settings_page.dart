@@ -1,3 +1,4 @@
+import 'package:blogger/homepage.dart';
 import 'package:blogger/loginpage.dart';
 import 'package:blogger/userdata.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,18 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   _UserSettingsPageState(this._userData);
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +38,10 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account Settings'),
+        title: const Text('Account Settings'),
       ),
       body: SingleChildScrollView(
-        child : Padding(
+        child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,17 +51,24 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                 'Change Username',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: 'New Username',
-                ),
+              TextFormField(
                 controller: _usernameController,
+                decoration: const InputDecoration(
+                  hintText: 'New Username (min. 3 characters)',
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().length < 3) {
+                    return 'Username must be at least 3 characters';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Handle username change logic
-                  _changeUsername(_userData.id);
+                  if (_validateUsername()) {
+                    _changeUsername(_userData.id);
+                  }
                 },
                 child: const Text('Change Username'),
               ),
@@ -60,25 +77,38 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                 'Change Password',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              TextField(
+              TextFormField(
                 controller: _oldPasswordController,
                 decoration: const InputDecoration(
                   hintText: 'Current Password',
                 ),
                 obscureText: true,
+                validator: (value) {
+                  if (value == null || value.trim().length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
               ),
-              TextField(
+              TextFormField(
                 controller: _newPasswordController,
                 decoration: const InputDecoration(
-                  hintText: 'New Password',
+                  hintText: 'New Password (min. 6 characters)',
                 ),
                 obscureText: true,
+                validator: (value) {
+                  if (value == null || value.trim().length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Handle password change logic
-                  _changePassword(_userData.id);
+                  if (_validatePassword()) {
+                    _changePassword(_userData.id);
+                  }
                 },
                 child: const Text('Change Password'),
               ),
@@ -87,23 +117,29 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                 'Delete Account',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              TextField(
-                decoration: const InputDecoration(
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
                   hintText: 'Please enter password for confirmation',
                 ),
                 obscureText: true,
-                onChanged: (value) {
-                  // Handle changes to the confirmation password
+                validator: (value) {
+                  if (value == null || value.trim().length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
                 },
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Handle account deletion logic
+                  if (_validateDeleteAccount()) {
+                    _deleteUser(_userData.id);
+                  }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: Text(
-                    'Delete Account',
+                  'Delete Account',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -114,8 +150,44 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     );
   }
 
+  bool _validateUsername() {
+    if (_usernameController.text.trim().length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Username must be at least 3 characters'),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  bool _validatePassword() {
+    if (_oldPasswordController.text.trim().length < 6 ||
+        _newPasswordController.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password must be at least 6 characters'),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  bool _validateDeleteAccount() {
+    if (_passwordController.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password must be at least 6 characters'),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _changeUsername(int id) async {
-    // Get user input from text controllers
     String username = _usernameController.text.trim();
 
     try {
@@ -125,8 +197,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           content: Text('Username changed successfully. Please log in.'),
         ),
       );
-      //Navigator.pop(context); // Navigate back to previous screen
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => LoginPage(),
@@ -143,7 +214,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Future<void> _changePassword(int id) async {
-    // Get user input from text controllers
     String oldPassword = _oldPasswordController.text.trim();
     String newPassword = _newPasswordController.text.trim();
 
@@ -154,8 +224,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           content: Text('Password changed successfully. Please log in.'),
         ),
       );
-      //Navigator.pop(context); // Navigate back to previous screen
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => LoginPage(),
@@ -166,6 +235,33 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Password changing failed. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteUser(int id) async {
+    String password = _passwordController.text.trim();
+    try {
+      await ApiService.deleteUser(id, _userData.email, password)
+          .then((_) => ApiService.performLogout()
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account deleted successfully.'),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(),
+        ),
+      );
+    } catch (e) {
+      //print('User deletion failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incorrect password'),
         ),
       );
     }

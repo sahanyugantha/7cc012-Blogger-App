@@ -22,7 +22,7 @@ class PostViewerPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post Details'),
+        title: const Text('Post Details'),
       ),
       body: SingleChildScrollView(
         child: Padding(
