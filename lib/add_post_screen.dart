@@ -10,6 +10,8 @@ import 'blog_post.dart';
 import 'homepage.dart';
 
 class AddPostPage extends StatefulWidget {
+
+
   @override
   _AddPostPageState createState() => _AddPostPageState();
 }
@@ -19,6 +21,7 @@ class _AddPostPageState extends State<AddPostPage> {
   final TextEditingController _descriptionController = TextEditingController();
   File? _imageFile;
   int? _userId;
+  UserData? _userData;
   bool _hasStoragePermission = false;
   bool _hasCameraPermission = false;
   bool _hasPhotosPermission = false;
@@ -26,15 +29,28 @@ class _AddPostPageState extends State<AddPostPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+   // _loadUserId();
+    _loadUserData();
     _checkPermissions();
   }
 
-  Future<void> _loadUserId() async {
-    dynamic userDataString = await ApiService.getUserData();
-    UserData userData = UserData.fromJson(userDataString);
-    _userId = userData.id;
+  Future<void> _loadUserData() async {
+    final userData = await ApiService.getUserData();
+    setState(() {
+      _userData = userData;
+
+      String? str = _userData?.id.toString();
+
+      print('USER ID ---------------------> $str');
+    });
   }
+
+  // Future<void> _loadUserId() async {
+  //   dynamic userDataString = await ApiService.getUserData();
+  //   UserData userData = UserData.fromJson(userDataString);
+  //   _userId = userData.id;
+  //   print('USER ID ---------------------> $_userId');
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -143,22 +159,25 @@ class _AddPostPageState extends State<AddPostPage> {
   }
 
   void _submitPost() {
+    _loadUserData();
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
 
-    if (title.isEmpty || _userId == null) {
+    if (title.isEmpty || _userData == null) {
+      print('TITLE  ----- > '+title);
       _showSnackBar('Please provide title');
       return;
     }
 
-    _sendPostToApi(title, description, _imageFile, _userId!);
+    int id = _userData!.id;
+    print('ID  ----- > $id');
+    _sendPostToApi(title, description, _imageFile, _userData!.id);
   }
 
   void _sendPostToApi(String title, String description, File? imageFile, int userId) {
     ApiService.addPost(title, description, imageFile, userId).then((_) async {
       _showSnackBar('Blog post created!');
       _clearInputs();
-      final List<BlogPost> blogPosts = await ApiService.fetchBlogPosts();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

@@ -45,6 +45,34 @@ class ApiService {
     }
   }
 
+  // Fetch all logged in user's blog posts from the API
+  static Future<List<BlogPost>> fetchUserPosts(int id) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/posts/user/$id'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        List<BlogPost> posts = jsonData.map((data) => BlogPost.fromJson(data)).toList();
+
+        // Initialize likedBy lists based on user's like status
+        UserData? userData = await getUserData();
+        int? userId = userData?.id;
+
+        for (var post in posts) {
+          post.likedBy = post.likedBy ?? {};
+          if (userId != null && post.likedBy!.contains(userId)) {
+            post.likedBy!.add(userId);
+          }
+        }
+        return posts;
+      } else {
+        throw Exception('Failed to load blog posts');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch blog posts: $e');
+    }
+  }
+
   // Update likes for a specific post
   // static Future<void> updatePostLikes(int postId) async {
   //   final response = await http.put(Uri.parse('$baseUrl/posts/$postId/like'));
@@ -173,6 +201,43 @@ class ApiService {
       request.fields['title'] = title;
       request.fields['description'] = description;
       request.fields['userId'] = id.toString();
+
+      if (imageFile != null) {
+        var imageStream = http.ByteStream(imageFile.openRead());
+        var length = await imageFile.length();
+        var multipartFile = http.MultipartFile(
+          'image',
+          imageStream,
+          length,
+          filename: imageFile.path.split('/').last,
+        );
+        request.files.add(multipartFile);
+      }
+
+      var response = await request.send();
+
+      if (response.statusCode == 201) {
+        // Post successfully added
+        print('Post added successfully');
+      } else {
+        // Handle error
+        int code = response.statusCode;
+        print('Failed to add post ---  response = $code');
+      }
+    } catch (e) {
+      // Handle network or other errors
+      print('Error: $e');
+    }
+  }
+
+
+  static Future<void> updatePost(int id, String title, String description, File? imageFile, int userId) async {
+    try {
+      var uri = Uri.parse('$baseUrl/posts/$id');
+      var request = http.MultipartRequest('PUT', uri);
+      request.fields['title'] = title;
+      request.fields['description'] = description;
+      request.fields['userId'] = userId.toString();
 
       if (imageFile != null) {
         var imageStream = http.ByteStream(imageFile.openRead());

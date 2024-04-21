@@ -8,6 +8,7 @@ final List<BlogPost> blogPosts = [
     author: "sahan",
     imageURL: 'https://cdn-icons-png.flaticon.com/256/2593/2593549.png',
     createTime: DateTime.now(),
+    userId: 1,
   ),
   BlogPost(
     id: 1,
@@ -17,6 +18,7 @@ final List<BlogPost> blogPosts = [
     imageURL:
     'https://cdn.icon-icons.com/icons2/560/PNG/512/Blog_icon-icons.com_53707.png',
     createTime: DateTime.now(),
+    userId: 1,
   ),
   BlogPost(
     id:2,
@@ -24,6 +26,7 @@ final List<BlogPost> blogPosts = [
     description: 'Description of Post 3',
     author: "sahan",
     createTime: DateTime.now(),
+    userId: 1,
   ),
   // Add more blog posts as needed
 ];

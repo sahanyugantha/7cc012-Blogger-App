@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:blogger/DashboardPage.dart';
 import 'package:blogger/add_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -148,6 +149,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: Text('Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DashboardPage(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -447,6 +454,12 @@ class BlogPostSearchDelegate extends SearchDelegate<String> {
           subtitle: Text(limitedDescription),
           onTap: () {
             close(context, suggestions[index].title);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostViewerPage(post: suggestions[index]),
+              ),
+            );
           },
         );
       },
@@ -471,6 +484,12 @@ class BlogPostSearchDelegate extends SearchDelegate<String> {
           subtitle: Text(limitedDescription),
           onTap: () {
             close(context, results[index].title);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostViewerPage(post: results[index]),
+              ),
+            );
           },
         );
       },

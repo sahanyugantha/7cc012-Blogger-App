@@ -5,6 +5,7 @@ class BlogPost {
   final String? imageURL;
   int likes;
   Set<int>? likedBy;
+  final int userId;
   final String author;
   final DateTime createTime;
 
@@ -15,6 +16,7 @@ class BlogPost {
     this.imageURL,
     this.likes = 0,
     this.likedBy,
+    required this.userId,
     required this.author,
     required this.createTime,
   });
@@ -24,6 +26,7 @@ class BlogPost {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
+      userId: json['user_id'],
       author: json['author'] ?? 'NA',
       imageURL: json['image'],
       likes: json['likes'] ?? 0,
@@ -34,6 +37,6 @@ class BlogPost {
 
   @override
   String toString() {
-    return 'BlogPost{id: $id, title: $title, description: $description, author: $author, imageURL: $imageURL, likes: $likes, likedBy: $likedBy, createTime: $createTime}';
+    return 'BlogPost{id: $id, title: $title, description: $description, userID: $userId, author: $author, imageURL: $imageURL, likes: $likes, likedBy: $likedBy, createTime: $createTime}';
   }
 }
