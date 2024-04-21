@@ -12,6 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'blog_post_viewer.dart';
+
 
 class MyHomePage extends StatefulWidget {
 
@@ -249,6 +251,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         const SnackBar(
                           content: Text('Opening...'),
                           duration: Duration(milliseconds: 500),
+                        ),
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PostViewerPage(post: _blogPosts[index]),
                         ),
                       );
                     },
