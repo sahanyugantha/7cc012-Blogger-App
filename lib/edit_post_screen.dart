@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:blogger/ApiService.dart';
 import 'package:blogger/DashboardPage.dart';
 import 'package:blogger/blog_post.dart';
@@ -93,8 +92,16 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   Widget _buildCurrentImageWidget() {
-    if (widget.post.imageURL != null) {
-
+    if (_imageFile != null) {
+      // Display the selected image
+      return Image.file(
+        _imageFile!,
+        height: 200,
+        width: MediaQuery.of(context).size.width,
+        fit: BoxFit.cover,
+      );
+    } else if (widget.post.imageURL != null) {
+      // Display the current image from post
       String url = '${ApiService.baseUrl}/${widget.post.imageURL}';
       return Image.network(
         url,
@@ -171,19 +178,18 @@ class _EditPostScreenState extends State<EditPostScreen> {
         updatedTitle,
         updatedDescription,
         _imageFile,
-        widget.post.userId
+        widget.post.userId,
       );
-      // Show success message or navigate back to previous screen
-      //Navigator.pop(context);
+
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Post updated successfully'),
         ),
       );
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardPage()),
-      );
+
+      // Navigate back to DashboardPage
+      Navigator.pop(context);
     } catch (e) {
       // Handle API error (e.g., display error message)
       ScaffoldMessenger.of(context).showSnackBar(
