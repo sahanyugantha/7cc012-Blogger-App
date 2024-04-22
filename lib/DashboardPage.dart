@@ -16,7 +16,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   UserData? _userData;
   List<BlogPost> _userPosts = [];
-  int noOfPosts = 0;
+  Set<BlogPost> _selectedPosts = Set<BlogPost>(); // to select items to delete
 
   @override
   void initState() {
@@ -38,7 +38,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final userPosts = await ApiService.fetchUserPosts(userId);
     setState(() {
       _userPosts = userPosts;
-      noOfPosts = _userPosts.length;
     });
   }
 
@@ -47,55 +46,77 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _selectedPosts.isEmpty ? null : _deleteSelectedPosts,
+          ),
+        ],
       ),
       body: _userData == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : (noOfPosts <= 0)
-          ? const Center(
-              child: Text(
-                "You don't have any post",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18.0,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            )
+          ? Center(
+        child: CircularProgressIndicator(),
+      )
+          : _userPosts.isEmpty
+          ? Center(
+        child: Text(
+          "You don't have any posts",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18.0,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      )
           : ListView.builder(
-              itemCount: _userPosts.length,
-              itemBuilder: (context, index) {
-                final post = _userPosts[index];
-                return ListTile(
-                  title: Text(post.title),
-                  subtitle: Text(
-                      'Posted on ${_formatDateTime(post.createTime)} by ${post.author}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
-                          ).then((_){
-                            _fetchUserPosts(post.userId);
-                          });;
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          _showDeleteConfirmationDialog(post);
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
+        itemCount: _userPosts.length,
+        itemBuilder: (context, index) {
+          final post = _userPosts[index];
+          final isSelected = _selectedPosts.contains(post);
+
+          return ListTile(
+            title: Text(post.title),
+            subtitle: Text(
+                'Posted on ${_formatDateTime(post.createTime)} by ${post.author}'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    _editPost(post);
+                  },
+                ),
+                Checkbox(
+                  value: isSelected,
+                  onChanged: (value) {
+                    setState(() {
+                      if (value!) {
+                        _selectedPosts.add(post);
+                      } else {
+                        _selectedPosts.remove(post);
+                      }
+                    });
+                  },
+                ),
+              ],
             ),
+            onTap: () {
+              if (_selectedPosts.isNotEmpty) {
+                setState(() {
+                  if (isSelected) {
+                    _selectedPosts.remove(post);
+                  } else {
+                    _selectedPosts.add(post);
+                  }
+                });
+              } else {
+                _editPost(post);
+              }
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -119,40 +140,27 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void _showDeleteConfirmationDialog(BlogPost post) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Post'),
-        content: Text('Are you sure you want to delete this post?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close the dialog
-            },
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              _deletePost(post);
-              Navigator.pop(context); // Close the dialog
-            },
-            child: Text('Delete'),
-          ),
-        ],
-      ),
-    );
+  void _editPost(BlogPost post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
+    ).then((_) {
+      _fetchUserPosts(_userData!.id);
+    });
   }
 
-  void _deletePost(BlogPost post) async{
-    // Implement post deletion logic (e.g., call API)
-    await ApiService.deletePost(post.id);
-    setState(() {
-      _userPosts.remove(post);
-    });
+  void _deleteSelectedPosts() async {
+    for (final post in _selectedPosts) {
+      await ApiService.deletePost(post.id);
+      setState(() {
+        _userPosts.remove(post);
+      });
+    }
+    _selectedPosts.clear();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Post deleted successfully'),
+        content: Text('Selected posts deleted successfully'),
       ),
     );
   }
