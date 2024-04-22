@@ -117,13 +117,17 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).primaryColor, // Use primary color as background
               ),
-              child: drawerTitle(_userData),
+              child: _userData != null
+                  ? drawerTitle(_userData!) // Display user details if logged in
+                  : SizedBox(), // Placeholder if not logged in
             ),
             if (_userData == null) ...[
+              // Display login and register options if not logged in
               ListTile(
                 title: Text('Login'),
+                leading: Icon(Icons.login), // Add icon
                 onTap: () {
                   Navigator.push(
                     context,
@@ -133,52 +137,57 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               ListTile(
                 title: Text('Register'),
+                leading: Icon(Icons.person_add), // Add icon
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => RegistrationPage()),
                   );
-
                 },
               ),
             ] else ...[
+              // Display options for logged-in users
               ListTile(
                 title: Text('Create Post'),
+                leading: Icon(Icons.note_add), // Add icon
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => AddPostPage()),
-                  ).then((_){
+                  ).then((_) {
                     _fetchBlogPosts();
                   });
                 },
               ),
               ListTile(
                 title: Text('Dashboard'),
+                leading: Icon(Icons.dashboard), // Add icon
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close drawer before navigating
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => DashboardPage(),
-                    ),
-                  ).then((_){
+                    MaterialPageRoute(builder: (context) => DashboardPage()),
+                  ).then((_) {
                     _fetchBlogPosts();
                   });
                 },
               ),
               ListTile(
                 title: Text('Logout'),
+                leading: Icon(Icons.logout), // Add icon
                 onTap: () {
                   _performLogout();
                 },
               ),
               ListTile(
                 title: Text('Settings'),
+                leading: Icon(Icons.settings), // Add icon
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => UserSettingsPage(userData: _userData!)),
+                    MaterialPageRoute(
+                      builder: (context) => UserSettingsPage(userData: _userData!),
+                    ),
                   );
                 },
               ),
@@ -296,12 +305,29 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Text drawerTitle(UserData? userData) {
-    if (userData != null) {
-      return Text('Welcome, ${userData.username}!');
-    } else {
-      return const Text('Please log in to manage blog content.');
-    }
+  Widget drawerTitle(UserData userData) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Welcome, ${userData.username}',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          userData.email,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
   }
 
 
