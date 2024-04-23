@@ -1,8 +1,6 @@
-import 'package:blogger/BlogDB.dart';
-import 'package:blogger/DatabaseHelper.dart';
-import 'package:blogger/UserItem.dart';
 import 'package:flutter/material.dart';
 
+import './ApiService.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -60,15 +58,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Future<void> _registerUser() async {
     // Get user input from text controllers
-    String _username = _usernameController.text.trim();
-    String _email = _emailController.text.trim();
-    String _password = _passwordController.text.trim();
-    String _imageUrl = "NA"; //TODO: future implementations
+    String username = _usernameController.text.trim();
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+    String imageUrl = "NA"; //TODO: future implementations
 
 
-    if (_password.length < 6) {
+    if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Password must be at least 6 characters.'),
         ),
       );
@@ -77,16 +75,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     // Perform user registration API call
     try {
-      final user = UserItem(
-        username: _username,
-        email: _email,
-        password: _password,
-        imageURL: _imageUrl,
-        createTime: DateTime.now(),
-      );
-      DatabaseHelper().createUser(user);
+      await ApiService.registerUser(username, email, password, imageUrl);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Registration successful. Please log in.'),
         ),
       );
@@ -94,7 +85,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     } catch (e) {
       print('Registration failed: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Registration failed. Please try again.'),
         ),
       );

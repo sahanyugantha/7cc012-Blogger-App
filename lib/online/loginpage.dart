@@ -1,9 +1,9 @@
-import 'package:blogger/DatabaseHelper.dart';
-import 'package:blogger/UserItem.dart';
-import 'package:blogger/homepage.dart';
+import 'package:blogger/online/ApiService.dart';
+import 'package:blogger/online/homepage.dart';
 import 'package:blogger/user_registration_page.dart';
 import 'package:flutter/material.dart';
 
+import './blog_post.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -91,22 +91,20 @@ class _LoginPageState extends State<LoginPage> {
 
   void _performLogin(String email, String password) async {
     try {
-      DatabaseHelper dbHelper = DatabaseHelper();
-      UserItem? user = await dbHelper.performLogin(email, password);
+      final userData = await ApiService.performLogin(email, password);
       _showSnackBar("Login successful!");
-      if (user != null) {
-        // Login successful, navigate to home page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MyHomePageOffline(),
-          ),
-        );
-      } else {
-        _showSnackBar("Login failed. Incorrect email or password.");
-      }
+
+      // Login successful, navigate to home page
+      final List<BlogPost> blogPosts = await ApiService.fetchBlogPosts();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(),
+        ),
+      );
     } catch (e) {
-      _showSnackBar("Login failed due an error - $e");
+      _showSnackBar("Login failed. Please check email and password");
+      print("Login failed.. $e");
     }
   }
 }

@@ -1,13 +1,13 @@
 import 'dart:io';
-import 'package:blogger/blog_post_item.dart';
 import 'package:blogger/online/ApiService.dart';
 import 'package:blogger/DashboardPage.dart';
+import 'package:blogger/online/blog_post.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class EditPostScreen extends StatefulWidget {
-  final PostItem post;
+  final BlogPost post;
   const EditPostScreen({Key? key, required this.post}) : super(key: key);
 
   @override
@@ -173,13 +173,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     // Perform API call to update post
     try {
-      // await ApiService.updatePost(
-      //   widget.post.id,
-      //   updatedTitle,
-      //   updatedDescription,
-      //   _imageFile,
-      //   widget.post.userId,
-      // );
+      await ApiService.updatePost(
+        widget.post.id,
+        updatedTitle,
+        updatedDescription,
+        _imageFile,
+        widget.post.userId,
+      );
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

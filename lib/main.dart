@@ -1,8 +1,8 @@
+import 'package:blogger/BlogDB.dart';
+import 'package:blogger/blog_post_item.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'ApiService.dart';
-import 'blog_post.dart';
 import 'homepage.dart';
 
 void main() {
@@ -11,7 +11,7 @@ void main() {
 
 
 class MyApp extends StatelessWidget {
-  final List<BlogPost> blogPosts = [];
+  final List<PostItem> blogPosts = [];
 
   MyApp({Key? key});
 
@@ -25,19 +25,7 @@ class MyApp extends StatelessWidget {
             seedColor: const Color.fromARGB(0, 223, 200, 99)),
         useMaterial3: true,
       ),
-      home: FutureBuilder<List<BlogPost>>(
-          future: ApiService.fetchBlogPosts(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-            final blogPosts = snapshot.data ?? [];
-              return MyHomePage();
-            }
-          },
-      ),
+      home: MyHomePageOffline(),
     );
   }
 }
