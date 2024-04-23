@@ -1,11 +1,10 @@
-import 'package:blogger/blog_post_item.dart';
 import 'package:flutter/material.dart';
 import 'package:blogger/online/blog_post.dart';
 import 'package:intl/intl.dart';
-import 'online/ApiService.dart'; // Import your BlogPost model
+import './ApiService.dart'; // Import your BlogPost model
 
 class PostViewerPage extends StatelessWidget {
-  final PostItem post;
+  final BlogPost post;
 
   const PostViewerPage({Key? key, required this.post}) : super(key: key);
 

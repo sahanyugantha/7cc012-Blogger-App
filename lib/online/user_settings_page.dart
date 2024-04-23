@@ -1,12 +1,14 @@
-import 'package:blogger/UserItem.dart';
 import 'package:blogger/homepage.dart';
 import 'package:blogger/loginpage.dart';
+import 'package:blogger/online/userdata.dart';
 import 'package:flutter/material.dart';
 
-import 'online/ApiService.dart';
+import 'ApiService.dart';
+import 'homepage.dart';
+
 
 class UserSettingsPage extends StatefulWidget {
-  final UserItem userData;
+  final UserData userData;
   const UserSettingsPage({Key? key, required this.userData}) : super(key: key);
 
   @override
@@ -14,7 +16,7 @@ class UserSettingsPage extends StatefulWidget {
 }
 
 class _UserSettingsPageState extends State<UserSettingsPage> {
-  final UserItem _userData;
+  final UserData _userData;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
@@ -187,7 +189,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     return true;
   }
 
-  Future<void> _changeUsername(int? id) async {
+  Future<void> _changeUsername(int id) async {
     String username = _usernameController.text.trim();
 
     try {
@@ -213,7 +215,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
-  Future<void> _changePassword(int? id) async {
+  Future<void> _changePassword(int id) async {
     String oldPassword = _oldPasswordController.text.trim();
     String newPassword = _newPasswordController.text.trim();
 
@@ -240,7 +242,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
-  Future<void> _deleteUser(int? id) async {
+  Future<void> _deleteUser(int id) async {
     String password = _passwordController.text.trim();
     try {
       await ApiService.deleteUser(id, _userData.email, password)
@@ -254,7 +256,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => MyHomePageOffline(),
+          builder: (context) => MyHomePage(),
         ),
       );
     } catch (e) {

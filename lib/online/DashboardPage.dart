@@ -1,11 +1,10 @@
-import 'package:blogger/DatabaseHelper.dart';
-import 'package:blogger/UserItem.dart';
-import 'package:blogger/blog_post_item.dart';
 import 'package:blogger/online/ApiService.dart';
+import 'package:blogger/online/edit_post_screen.dart';
+import 'package:blogger/online/userdata.dart';
 import 'package:flutter/material.dart';
+import 'package:blogger/online/blog_post.dart';
 import 'package:intl/intl.dart';
 
-import 'edit_post_screen.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -15,9 +14,9 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  UserItem? _userData;
-  List<PostItem> _userPosts = [];
-  Set<PostItem> _selectedPosts = Set<PostItem>(); // to select items to delete
+  UserData? _userData;
+  List<BlogPost> _userPosts = [];
+  Set<BlogPost> _selectedPosts = Set<BlogPost>(); // to select items to delete
 
   @override
   void initState() {
@@ -26,11 +25,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _loadUserData() async {
-    final userData = await DatabaseHelper().getUserData();
+    final userData = await ApiService.getUserData();
     setState(() {
       _userData = userData;
       if (_userData != null) {
-        _fetchUserPosts(1); //TODO:
+        _fetchUserPosts(_userData!.id);
       }
     });
   }
@@ -38,7 +37,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _fetchUserPosts(int userId) async {
     final userPosts = await ApiService.fetchUserPosts(userId);
     setState(() {
-      _userPosts = userPosts.cast<PostItem>();
+      _userPosts = userPosts;
     });
   }
 
@@ -141,18 +140,18 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void _editPost(PostItem post) {
+  void _editPost(BlogPost post) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
     ).then((_) {
-      _fetchUserPosts(1); //TODO:
+      _fetchUserPosts(_userData!.id);
     });
   }
 
   void _deleteSelectedPosts() async {
     for (final post in _selectedPosts) {
-      await DatabaseHelper().deletePost(post.id!);
+      await ApiService.deletePost(post.id);
       setState(() {
         _userPosts.remove(post);
       });

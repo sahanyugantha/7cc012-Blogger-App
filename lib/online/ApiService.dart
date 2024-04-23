@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:blogger/userdata.dart';
+import 'package:blogger/online/userdata.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'blog_post.dart';
@@ -9,7 +9,8 @@ import 'dart:io';
 class ApiService {
   // static const String baseUrl = 'http://localhost:3000'; //  API base URL
   //static const String baseUrl = 'http://10.0.2.2:3000'; // localhost API base URL for Android
-  static const String baseUrl = 'http://192.168.0.188:3000'; // localhost API base URL of my network
+  //static const String baseUrl = 'http://192.168.0.188:3000'; // localhost API base URL of my network
+  static const String baseUrl = 'http://172.25.69.126:3000'; // localhost API base URL of  uni eduroam
 
   /// FOR emojis
   /// ALTER DATABASE blogdb CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -202,7 +203,7 @@ class ApiService {
     }
   }
 
-  static Future<void> changeUsername(int id, String username) async {
+  static Future<void> changeUsername(int? id, String username) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/users/change-username/$id'),
@@ -226,7 +227,7 @@ class ApiService {
     }
   }
 
-  static Future<void> deleteUser(int id, String email, String password) async {
+  static Future<void> deleteUser(int? id, String email, String password) async {
     try {
 
       if(await performLogin(email, password)) {
@@ -251,7 +252,7 @@ class ApiService {
     }
   }
 
-  static Future<void> changePassword(int id, String oldPassword, String newPassword) async {
+  static Future<void> changePassword(int? id, String oldPassword, String newPassword) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/users/change-password/$id'),

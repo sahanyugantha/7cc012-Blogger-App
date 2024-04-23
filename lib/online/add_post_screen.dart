@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:blogger/DatabaseHelper.dart';
-import 'package:blogger/UserItem.dart';
-import 'package:blogger/blog_post_item.dart';
+import 'package:blogger/online/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'ApiService.dart';
+import 'ApiService.dart';
+import 'blog_post.dart';
 import 'homepage.dart';
 
 class AddPostPage extends StatefulWidget {
@@ -21,7 +22,7 @@ class _AddPostPageState extends State<AddPostPage> {
   final TextEditingController _descriptionController = TextEditingController();
   File? _imageFile;
   int? _userId;
-  UserItem? _userData;
+  UserData? _userData;
   bool _hasStoragePermission = false;
   bool _hasCameraPermission = false;
   bool _hasPhotosPermission = false;
@@ -29,22 +30,25 @@ class _AddPostPageState extends State<AddPostPage> {
   @override
   void initState() {
     super.initState();
+   // _loadUserId();
     _loadUserData();
     _checkPermissions();
   }
 
   Future<void> _loadUserData() async {
-    final userItem = await DatabaseHelper().getUserDataSP();
+    final userData = await ApiService.getUserData();
     setState(() {
-      _userData = userItem;
+      _userData = userData;
+
       String? str = _userData?.id.toString();
+
       print('USER ID ---------------------> $str');
     });
   }
 
   Future<void> _loadUserId() async {
-    dynamic userDataString = await DatabaseHelper().getUserData();
-    UserItem userData = UserItem.fromMap(userDataString);
+    dynamic userDataString = await ApiService.getUserData();
+    UserData userData = UserData.fromJson(userDataString);
     _userId = userData.id;
     print('USER ID ---------------------> $_userId');
   }
@@ -166,28 +170,19 @@ class _AddPostPageState extends State<AddPostPage> {
       return;
     }
 
-    int? id = _userData?.id;
+    int id = _userData!.id;
     print('ID  ----- > $id');
-
-    _sendPostToDatabase(title, description, _imageFile, id);
+    _sendPostToApi(title, description, _imageFile, _userData!.id);
   }
 
-  void _sendPostToDatabase(String title, String description, File? imageFile, int? userId) {
-    PostItem postItem = PostItem(
-        title: title,
-        description: description,
-        imageURL: "NA",
-        userId: userId,
-        author: 'author',
-        createTime: DateTime.now()
-    );
-    DatabaseHelper().savePostData(postItem).then((_) async {
+  void _sendPostToApi(String title, String description, File? imageFile, int userId) {
+    ApiService.addPost(title, description, imageFile, userId).then((_) async {
       _showSnackBar('Blog post created!');
       _clearInputs();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => MyHomePageOffline(),
+          builder: (context) => MyHomePage(),
         ),
       );
     }).catchError((error) {
