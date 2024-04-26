@@ -1,5 +1,5 @@
-import 'package:blogger/homepage.dart';
-import 'package:blogger/loginpage.dart';
+import 'package:blogger/online/homepage.dart';
+import 'package:blogger/online/loginpage.dart';
 import 'package:blogger/online/userdata.dart';
 import 'package:flutter/material.dart';
 

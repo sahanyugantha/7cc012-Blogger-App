@@ -2,7 +2,7 @@
 
 import 'package:blogger/blog_post_item.dart';
 
-import 'DatabaseHelper.dart';
+import 'db/DatabaseHelper.dart';
 import 'UserItem.dart';
 
 Future<void> insertInitialUserData() async {

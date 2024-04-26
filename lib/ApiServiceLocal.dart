@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:blogger/online/userdata.dart';
 
-import 'DatabaseHelper.dart';
+import 'db/DatabaseHelper.dart';
 
 class ApiServiceLocal {
   // static Future<List<PostItem>> fetchBlogPosts() async {

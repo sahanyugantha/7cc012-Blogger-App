@@ -1,4 +1,4 @@
-import 'package:blogger/DatabaseHelper.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/UserItem.dart';
 import 'package:blogger/homepage.dart';
 import 'package:blogger/user_registration_page.dart';
@@ -93,9 +93,9 @@ class _LoginPageState extends State<LoginPage> {
     try {
       DatabaseHelper dbHelper = DatabaseHelper();
       UserItem? user = await dbHelper.performLogin(email, password);
-      _showSnackBar("Login successful!");
       if (user != null) {
         // Login successful, navigate to home page
+        _showSnackBar("Login successful!");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

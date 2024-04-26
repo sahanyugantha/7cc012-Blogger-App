@@ -1,4 +1,4 @@
-import 'package:blogger/DatabaseHelper.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/UserItem.dart';
 import 'package:blogger/blog_post_item.dart';
 import 'package:blogger/online/ApiService.dart';

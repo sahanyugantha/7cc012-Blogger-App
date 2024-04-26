@@ -1,4 +1,4 @@
-import 'package:blogger/BlogDB.dart';
+import 'package:blogger/db/BlogDB.dart';
 import 'package:blogger/blog_post_item.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

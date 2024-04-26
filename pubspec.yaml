@@ -39,6 +39,7 @@ dependencies:
   intl: ^0.19.0 #for date time formatting
   connectivity_plus: ^6.0.2 #for check internet connection
   sqflite: ^2.3.3
+  path: ^1.9.0
 
 
 

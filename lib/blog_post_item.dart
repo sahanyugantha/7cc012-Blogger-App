@@ -3,7 +3,7 @@ class PostItem {
   final String title;
   final String description;
   final String imageURL;
-  final int? userId;
+  final int userId;
   final String author;
   final DateTime createTime;
   int? likes = 0;
@@ -33,6 +33,28 @@ class PostItem {
       likes: map['likes'] ?? 0,
       likedBy: map['liked_by'] != null ? Set<int>.from(map['liked_by']) : null,
     );
+  }
+
+  // Method to toggle like status for a user
+  void toggleLike(int userId) {
+    if (likedBy!.contains(userId)) {
+      // If the user already liked the post, unlike it
+      likedBy!.remove(userId);
+      likes = (likes! > 0) ? likes! - 1 : 0; // Ensure likes count doesn't go negative
+    } else {
+      // If the user hasn't liked the post yet, like it
+      likedBy!.add(userId);
+      likes = (likes! >= 0) ? likes! + 1 : 1; // Increment likes count
+    }
+  }
+
+  // Method to remove all likes done by a user to posts
+  void unlikeAll(int userId) {
+    if (likedBy!.contains(userId)) {
+      // If the user has liked the post, remove the like
+      likedBy!.remove(userId);
+      likes = (likes! > 0) ? likes! - 1 : 0; // Decrement likes count
+    }
   }
 
   Map<String, dynamic> toMap() {

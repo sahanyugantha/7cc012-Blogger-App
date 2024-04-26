@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:blogger/DatabaseHelper.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/UserItem.dart';
 import 'package:blogger/blog_post_item.dart';
 import 'package:flutter/material.dart';
@@ -169,10 +169,10 @@ class _AddPostPageState extends State<AddPostPage> {
     int? id = _userData?.id;
     print('ID  ----- > $id');
 
-    _sendPostToDatabase(title, description, _imageFile, id);
+    _sendPostToDatabase(title, description, _imageFile, id!);
   }
 
-  void _sendPostToDatabase(String title, String description, File? imageFile, int? userId) {
+  void _sendPostToDatabase(String title, String description, File? imageFile, int userId) {
     PostItem postItem = PostItem(
         title: title,
         description: description,

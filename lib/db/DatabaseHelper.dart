@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'BlogDB.dart';
-import 'blog_post_item.dart';
+import '../blog_post_item.dart';
 
 class DatabaseHelper {
   static Database? _database;
@@ -145,8 +145,13 @@ class DatabaseHelper {
     }
   }
 
+  performLogout() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userData');
+  }
+
   // Retrieve user data from the database
-  Future<UserItem?> getUserData() async {
+  Future<UserItem?> fetchUserData() async {
     try {
       final Database db = await database;
       final List<Map<String, dynamic>> userMaps = await db.query('user');
@@ -166,6 +171,24 @@ class DatabaseHelper {
     } catch (e) {
       print('Error retrieving user data: $e');
       return null; // Handle the error gracefully
+    }
+  }
+
+  // Retrieve user data from the Shared Preferences
+   Future<UserItem?> getUserData() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userDataString = prefs.getString('userData');
+
+      if (userDataString != null) {
+        final Map<String, dynamic> userDataMap = jsonDecode(userDataString);
+        return UserItem.fromJson(userDataMap); // Convert JSON map to UserData object
+      } else {
+        return null; // Return null if no user data is found
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      return null; // Return null in case of an error
     }
   }
 
@@ -232,6 +255,145 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+ //// post_likes table////
+
+  // Save a like for a post
+  Future<void> savePostLike(int postId, int userId) async {
+    try {
+      final db = await database;
+      await db.insert(
+        'post_likes',
+        {
+          'post_id': postId,
+          'user_id': userId,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    } catch (e) {
+      print('Error saving post like: $e');
+      rethrow; // Rethrow the error for higher-level handling
+    }
+  }
+
+  // Remove a like for a post
+  Future<void> removePostLike(int postId, int userId) async {
+    try {
+      final db = await database;
+      await db.delete(
+        'post_likes',
+        where: 'post_id = ? AND user_id = ?',
+        whereArgs: [postId, userId],
+      );
+    } catch (e) {
+      print('Error removing post like: $e');
+      rethrow; // Rethrow the error for higher-level handling
+    }
+  }
+
+  // Check if a user has liked a post
+  Future<bool> hasUserLikedPost(int postId, int userId) async {
+    try {
+      final db = await database;
+      final count = Sqflite.firstIntValue(await db.rawQuery(
+        'SELECT COUNT(*) FROM post_likes WHERE post_id = ? AND user_id = ?',
+        [postId, userId],
+      ));
+      return count! > 0;
+    } catch (e) {
+      print('Error checking if user has liked post: $e');
+      return false; // Return false in case of an error
+    }
+  }
+
+  // Fetch liked posts for a user
+  Future<List<int>> fetchLikedPostsForUser(int userId) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> likes = await db.query(
+        'post_likes',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
+      return likes.map((like) => like['post_id'] as int).toList();
+    } catch (e) {
+      print('Error fetching liked posts for user: $e');
+      return []; // Return an empty list in case of an error
+    }
+  }
+
+
+
+
+/////VIEW/////
+  // Fetch posts with their corresponding like counts
+  Future<List<Map<String, dynamic>>> postsWithLikes() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> posts = await db.rawQuery('''
+        SELECT id, title, description, image, likes
+        FROM post_details
+      ''');
+      return posts;
+    } catch (e) {
+      print('Error fetching posts with likes: $e');
+      return []; // Return an empty list in case of an error
+    }
+  }
+
+
+  // Fetch posts for a specific user using the post_details view
+  Future<List<PostItem>> fetchUserPosts(int userId) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> postMaps = await db.query(
+        'post_details',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
+      return List.generate(postMaps.length, (index) {
+        return PostItem(
+          id: postMaps[index]['id'],
+          title: postMaps[index]['title'],
+          description: postMaps[index]['description'],
+          userId: postMaps[index]['user_id'],
+          author: postMaps[index]['username'] ?? 'NA',
+          imageURL: postMaps[index]['image'],
+          likes: postMaps[index]['likes'] ?? 0,
+          createTime: DateTime.parse(postMaps[index]['create_time']),
+        );
+      });
+    } catch (e) {
+      print('Error fetching user posts: $e');
+      return []; // Return an empty list in case of an error
+    }
+  }
+
+  /////////VIEW////////
+  // Fetch posts from the post_details view
+  Future<List<PostItem>> fetchPostsFromView() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> postMaps = await db.query('post_details');
+
+      return List.generate(postMaps.length, (index) {
+        return PostItem(
+          id: postMaps[index]['id'],
+          title: postMaps[index]['title'],
+          description: postMaps[index]['description'],
+          userId: postMaps[index]['user_id'],
+          author: postMaps[index]['username'] ?? 'NA',
+          imageURL: postMaps[index]['image'],
+          likes: postMaps[index]['likes'] ?? 0,
+          createTime: DateTime.parse(postMaps[index]['create_time']),
+        );
+      });
+    } catch (e) {
+      print('Error fetching posts from view: $e');
+      return []; // Return an empty list in case of an error
+    }
+  }
+
 
 
   // Retrieve user data from SharedPreferences

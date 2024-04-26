@@ -1,5 +1,5 @@
-import 'package:blogger/BlogDB.dart';
-import 'package:blogger/DatabaseHelper.dart';
+import 'package:blogger/db/BlogDB.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/UserItem.dart';
 import 'package:flutter/material.dart';
 
