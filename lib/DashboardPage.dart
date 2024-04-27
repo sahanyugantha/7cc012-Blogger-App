@@ -1,7 +1,6 @@
 import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/UserItem.dart';
 import 'package:blogger/blog_post_item.dart';
-import 'package:blogger/online/ApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -36,7 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _fetchUserPosts(int userId) async {
-    final userPosts = await ApiService.fetchUserPosts(userId);
+    final userPosts = await DatabaseHelper().fetchUserPosts(userId);
     setState(() {
       _userPosts = userPosts.cast<PostItem>();
     });

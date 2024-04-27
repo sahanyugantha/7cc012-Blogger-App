@@ -1,8 +1,6 @@
 import 'package:blogger/blog_post_item.dart';
 import 'package:flutter/material.dart';
-import 'package:blogger/online/blog_post.dart';
 import 'package:intl/intl.dart';
-import 'online/ApiService.dart'; // Import your BlogPost model
 
 class PostViewerPage extends StatelessWidget {
   final PostItem post;
@@ -16,9 +14,9 @@ class PostViewerPage extends StatelessWidget {
 
     String coverPhotoUrl = "";
     if(post.imageURL == null || post.imageURL == "NA"){
-      coverPhotoUrl = '${ApiService.baseUrl}/images/no-image.jpg';
+     // coverPhotoUrl = '${ApiService.baseUrl}/images/no-image.jpg';
     } else {
-      coverPhotoUrl = '${ApiService.baseUrl}/${post.imageURL}';
+      //coverPhotoUrl = '${ApiService.baseUrl}/${post.imageURL}';
     }
 
     return Scaffold(

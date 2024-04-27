@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:blogger/blog_post_item.dart';
-import 'package:blogger/online/ApiService.dart';
 import 'package:blogger/DashboardPage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -102,7 +101,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
       );
     } else if (widget.post.imageURL != null) {
       // Display the current image from post
-      String url = '${ApiService.baseUrl}/${widget.post.imageURL}';
+     // String url = '${ApiService.baseUrl}/${widget.post.imageURL}';
+      String url = '';
       return Image.network(
         url,
         height: 200,

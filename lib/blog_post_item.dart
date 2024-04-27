@@ -6,8 +6,8 @@ class PostItem {
   final int userId;
   final String author;
   final DateTime createTime;
-  int? likes = 0;
-  Set<int>? likedBy = {};
+  int likes;
+  Set<int>? likedBy;
 
   PostItem({
     this.id,
@@ -17,9 +17,14 @@ class PostItem {
     required this.userId,
     required this.author,
     required this.createTime,
-    this.likes,
+    this.likes = 0,
     this.likedBy,
   });
+
+  @override
+  String toString() {
+    return 'PostItem {id: $id, title: $title, description: $description, userID: $userId, author: $author, imageURL: $imageURL, likes: $likes, likedBy: $likedBy, createTime: $createTime}';
+  }
 
   factory PostItem.fromMap(Map<String, dynamic> map) {
     return PostItem(

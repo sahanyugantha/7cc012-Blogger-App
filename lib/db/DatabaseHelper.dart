@@ -38,6 +38,8 @@ class DatabaseHelper {
         onCreate: (db, version) async {
           await BlogDB().createPostTable(db);
           await BlogDB().createUserTable(db);
+          await BlogDB().createPostLikesTable(db);
+          await BlogDB().createPostDetailsView(db);
         },
         singleInstance: true,
       );
@@ -48,25 +50,52 @@ class DatabaseHelper {
   }
 
   // Retrieve all blog posts from the database
+
   Future<List<PostItem>> getBlogPosts() async {
-    final db = await database;
-    final List<Map<String, dynamic>> postMaps = await db.query('posts');
-    return List.generate(postMaps.length, (index) {
-      return PostItem(
-        id: postMaps[index]['id'],
-        title: postMaps[index]['title'],
-        description: postMaps[index]['description'],
-        userId: postMaps[index]['user_id'],
-        author: postMaps[index]['author'] ?? 'NA',
-        imageURL: postMaps[index]['imageUrl'],
-        likes: postMaps[index]['likes'] ?? 0,
-        likedBy: postMaps[index]['likedBy'] != null
-            ? Set<int>.from(postMaps[index]['likedBy'])
-            : null,
-        createTime: DateTime.parse(postMaps[index]['create_time']),
-      );
-    });
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> postMaps = await db.query('post_details');
+      final List<Map<String, dynamic>> postsWithLikesResult = await postsWithLikes();
+
+      return List.generate(postMaps.length, (index) {
+        final post = PostItem(
+          id: postMaps[index]['id'],
+          title: postMaps[index]['title'],
+          description: postMaps[index]['description'],
+          userId: postMaps[index]['user_id'],
+          author: postMaps[index]['author'] ?? 'NA',
+          imageURL: postMaps[index]['imageUrl'],
+          likes: postMaps[index]['likes'] ?? 0,
+          createTime: DateTime.parse(postMaps[index]['create_time']),
+        );
+
+        // Populate likedBy field using postsWithLikesResult
+        final postId = post.id;
+        Map<String, dynamic>? likedPost;
+        for (final post in postsWithLikesResult) {
+          if (post['id'] == postId) {
+            likedPost = post;
+            break;
+          }
+        }
+
+        if (likedPost != null) {
+          final likedByList = likedPost['likedBy'] as List<int>;
+          post.likedBy = Set<int>.from(likedByList);
+        }
+
+        return post;
+      });
+    } catch (e) {
+      print('Error fetching blog posts: $e');
+      return []; // Return an empty list in case of an error
+    }
   }
+
+
+
+
+
 
   // Fetch Post By Id
   Future<PostItem?> fetchPostById(int id) async {
@@ -183,12 +212,10 @@ class DatabaseHelper {
       if (userDataString != null) {
         final Map<String, dynamic> userDataMap = jsonDecode(userDataString);
         return UserItem.fromJson(userDataMap); // Convert JSON map to UserData object
-      } else {
-        return null; // Return null if no user data is found
       }
     } catch (e) {
       print('Error fetching user data: $e');
-      return null; // Return null in case of an error
+      throw Exception('Error fetching user data: $e');
     }
   }
 
@@ -306,6 +333,8 @@ class DatabaseHelper {
     }
   }
 
+
+
   // Fetch liked posts for a user
   Future<List<int>> fetchLikedPostsForUser(int userId) async {
     try {
@@ -327,19 +356,38 @@ class DatabaseHelper {
 
 /////VIEW/////
   // Fetch posts with their corresponding like counts
+  // Future<List<Map<String, dynamic>>> postsWithLikes() async {
+  //   try {
+  //     final db = await database;
+  //     final List<Map<String, dynamic>> posts = await db.rawQuery('''
+  //       SELECT id, title, description, image, likes
+  //       FROM post_details
+  //     ''');
+  //     return posts;
+  //   } catch (e) {
+  //     print('Error fetching posts with likes: $e');
+  //     return []; // Return an empty list in case of an error
+  //   }
+  // }
+
+  //uses the view
+  // Fetch posts with their corresponding like counts
+  // Fetch posts with their corresponding like counts
   Future<List<Map<String, dynamic>>> postsWithLikes() async {
     try {
       final db = await database;
       final List<Map<String, dynamic>> posts = await db.rawQuery('''
-        SELECT id, title, description, image, likes
-        FROM post_details
-      ''');
+      SELECT id, title, description, image, likes
+      FROM post_details
+    ''');
       return posts;
     } catch (e) {
       print('Error fetching posts with likes: $e');
       return []; // Return an empty list in case of an error
     }
   }
+
+
 
 
   // Fetch posts for a specific user using the post_details view
@@ -374,25 +422,48 @@ class DatabaseHelper {
   Future<List<PostItem>> fetchPostsFromView() async {
     try {
       final db = await database;
+
+      // Fetch posts
       final List<Map<String, dynamic>> postMaps = await db.query('post_details');
 
-      return List.generate(postMaps.length, (index) {
+      // Fetch post likes
+      final List<Map<String, dynamic>> postLikesMaps = await db.query('post_likes');
+
+      // Create a map to store likes by post id
+      final Map<int, Set<int>> likesByPostId = {};
+
+      // Populate the map with likes
+      for (final likeMap in postLikesMaps) {
+        final postId = likeMap['post_id'];
+        final userId = likeMap['user_id'];
+        if (!likesByPostId.containsKey(postId)) {
+          likesByPostId[postId] = {};
+        }
+        likesByPostId[postId]!.add(userId);
+      }
+
+      // Create PostItems with likedBy populated
+      return postMaps.map((postMap) {
+        final postId = postMap['id'];
+        final likedBy = likesByPostId[postId] ?? {}; // Set likedBy to an empty set if there are no likes
         return PostItem(
-          id: postMaps[index]['id'],
-          title: postMaps[index]['title'],
-          description: postMaps[index]['description'],
-          userId: postMaps[index]['user_id'],
-          author: postMaps[index]['username'] ?? 'NA',
-          imageURL: postMaps[index]['image'],
-          likes: postMaps[index]['likes'] ?? 0,
-          createTime: DateTime.parse(postMaps[index]['create_time']),
+          id: postMap['id'],
+          title: postMap['title'],
+          description: postMap['description'],
+          userId: postMap['user_id'],
+          author: postMap['username'] ?? 'NA',
+          imageURL: postMap['image'],
+          likes: postMap['likes'] ?? 0,
+          createTime: DateTime.parse(postMap['create_time']),
+          likedBy: likedBy,
         );
-      });
+      }).toList();
     } catch (e) {
       print('Error fetching posts from view: $e');
       return []; // Return an empty list in case of an error
     }
   }
+
 
 
 

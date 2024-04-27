@@ -1,9 +1,9 @@
 import 'package:blogger/UserItem.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:blogger/homepage.dart';
 import 'package:blogger/loginpage.dart';
 import 'package:flutter/material.dart';
 
-import 'online/ApiService.dart';
 
 class UserSettingsPage extends StatefulWidget {
   final UserItem userData;
@@ -134,7 +134,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               ElevatedButton(
                 onPressed: () {
                   if (_validateDeleteAccount()) {
-                    _deleteUser(_userData.id);
+                    _deleteUser(_userData.id!);
                   }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -190,61 +190,61 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   Future<void> _changeUsername(int? id) async {
     String username = _usernameController.text.trim();
 
-    try {
-      await ApiService.changeUsername(id, username);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Username changed successfully. Please log in.'),
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LoginPage(),
-        ),
-      );
-    } catch (e) {
-      print('Username changing failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Username changing failed. Please try again.'),
-        ),
-      );
-    }
+    // try {
+    //   await ApiService.changeUsername(id, username);
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Username changed successfully. Please log in.'),
+    //     ),
+    //   );
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => LoginPage(),
+    //     ),
+    //   );
+    // } catch (e) {
+    //   print('Username changing failed: $e');
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Username changing failed. Please try again.'),
+    //     ),
+    //   );
+    // }
   }
 
   Future<void> _changePassword(int? id) async {
-    String oldPassword = _oldPasswordController.text.trim();
-    String newPassword = _newPasswordController.text.trim();
-
-    try {
-      await ApiService.changePassword(id, oldPassword, newPassword);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password changed successfully. Please log in.'),
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LoginPage(),
-        ),
-      );
-    } catch (e) {
-      print('Password changing failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password changing failed. Please try again.'),
-        ),
-      );
-    }
+    // String oldPassword = _oldPasswordController.text.trim();
+    // String newPassword = _newPasswordController.text.trim();
+    //
+    // try {
+    //   await ApiService.changePassword(id, oldPassword, newPassword);
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Password changed successfully. Please log in.'),
+    //     ),
+    //   );
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => LoginPage(),
+    //     ),
+    //   );
+    // } catch (e) {
+    //   print('Password changing failed: $e');
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Password changing failed. Please try again.'),
+    //     ),
+    //   );
+    // }
   }
 
-  Future<void> _deleteUser(int? id) async {
+  Future<void> _deleteUser(int id) async {
     String password = _passwordController.text.trim();
     try {
-      await ApiService.deleteUser(id, _userData.email, password)
-          .then((_) => ApiService.performLogout()
+      await DatabaseHelper().deleteUser(id)
+          .then((_) => DatabaseHelper().performLogout()
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

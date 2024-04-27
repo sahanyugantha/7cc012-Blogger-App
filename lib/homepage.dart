@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:blogger/UserItem.dart';
@@ -32,38 +33,27 @@ class _MyHomePageState extends State<MyHomePageOffline> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController _searchController = TextEditingController();
 
-  late Database _database;
   bool _isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeDatabase();
+    _initializeData();
   }
 
-  Future<void> _initializeDatabase() async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, 'blog.db');
+  Future<void> _initializeData() async {
 
-    _database = await openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await BlogDB().createPostTable(db);
-        await BlogDB().createUserTable(db);
-        await BlogDB().createPostLikesTable(db);
-        await BlogDB().createPostDetailsView(db);
-      },
-    );
     await _fetchBlogPosts();
     await _loadUserData();
   }
 
   Future<void> _loadUserData() async {
     try {
-      final UserItem? userData = await DatabaseHelper().getUserData();
+      final userData = await DatabaseHelper().getUserData();
       setState(() {
         _userData = userData;
+        int? id = _userData?.id;
+        print('USER ----> $id');
         _isLoggedIn = userData != null;
       });
     } catch (e) {
@@ -71,18 +61,36 @@ class _MyHomePageState extends State<MyHomePageOffline> {
     }
   }
 
+
   Future<void> _fetchBlogPosts() async {
     try {
-     // final List<PostItem> blogPosts = await DatabaseHelper().getBlogPosts();
       final List<PostItem> blogPosts = await DatabaseHelper().fetchPostsFromView();
+      for(PostItem postItem in blogPosts){
+        String obj = postItem.title;
+        String a = postItem.author;
+        print("POST ----> $obj");
+      }
+
       setState(() {
-        _blogPosts = blogPosts;
-        _filteredPosts = List.from(_blogPosts);
+        _blogPosts = blogPosts.map((post) {
+          print(post.toString());
+          // Initialize likedBy list based on post.likedBy
+          Set<int> likedBySet = post.likedBy != null ? Set<int>.from(post.likedBy!) : {}; // Initialize as an empty set if null
+          post.likedBy = likedBySet; // Assign the initialized set directly
+          return post;
+        }).toList();
+        //_blogPosts = blogPosts;
+       _filteredPosts = List.from(_blogPosts);
       });
     } catch (e) {
       print('Error fetching blog posts: $e');
     }
   }
+
+
+
+
+
 
   void _filterPosts(String query) {
     setState(() {
@@ -213,6 +221,16 @@ class _MyHomePageState extends State<MyHomePageOffline> {
 
               final PostItem post = _filteredPosts[index];
               String coverPhotoUrl = post.imageURL ?? 'https://example.com/no-image.jpg';
+
+              // int? id = post.id;
+              // int? uid = post.userId;
+              // int? likes = post.likes;
+              // String? likedBy = post.likedBy?.first.toString();
+              // print('ID ----> $id');
+              // print('USER ----> $uid');
+              // print('Likes ----> $likes');
+              // print('likedBy ----> $likedBy');
+
 
               final bool isLiked = _userData != null && post.likedBy?.contains(_userData!.id) == true;
 
