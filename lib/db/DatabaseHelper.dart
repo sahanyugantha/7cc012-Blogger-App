@@ -179,6 +179,8 @@ class DatabaseHelper {
     await prefs.remove('userData');
   }
 
+
+
   // Retrieve user data from the database
   Future<UserItem?> fetchUserData() async {
     try {
@@ -273,17 +275,68 @@ class DatabaseHelper {
     );
   }
 
-  // Delete User
-  Future<int> deleteUser(int id) async {
+  Future<void> deleteUser(UserItem userItem, String password) async {
     final database = await DatabaseHelper().database;
-    return await database.delete(
-      'user',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    if (password == userItem.password) {
+
+      try {
+        // remove all likes done by the user
+        await database.delete(
+          'post_likes', // Table name where likes are stored
+          where: 'user_id = ?', // Where clause to find likes by user ID
+          whereArgs: [userItem.id], // Value of the user ID
+        );
+
+        // Then delete the user
+        await database.delete(
+          'user', // Table name where users are stored
+          where: 'id = ?', // Where clause to find the user by ID
+          whereArgs: [userItem.id], // Value of the user ID
+        );
+
+      } catch (e) {
+        throw Exception('Failed to delete user: $e');
+      }
+    }
   }
 
- //// post_likes table////
+
+  Future<void> changeUsername(int? id, String newUsername) async {
+    try {
+      final database = await DatabaseHelper().database;
+      await database.update(
+        'user', // Table name
+        {'username': newUsername}, // New username
+        where: 'id = ?', // Where clause to find the user by ID
+        whereArgs: [id], // Value of the ID
+      );
+    } catch (e) {
+      throw Exception('Failed to change username: $e');
+    }
+  }
+
+   Future<void> changePassword(UserItem userItem, String oldPassword, String newPassword) async {
+    try {
+      final database = await DatabaseHelper().database;
+      if(oldPassword == userItem.password) {
+        await database.update(
+          'user', // Table name
+          {'password': newPassword}, // New username
+          where: 'id = ?', // Where clause to find the user by ID
+          whereArgs: [userItem.id], // Value of the ID
+        );
+      } else {
+        throw Exception('Incorrect password');
+      }
+    } catch (e) {
+      // Exception occurred during updating
+      print('Error during updating: $e');
+      throw Exception('Error during updating');
+    }
+  }
+
+
+  //// post_likes table////
 
   // Save a like for a post
   Future<void> savePostLike(int postId, int userId) async {
