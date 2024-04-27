@@ -87,11 +87,6 @@ class _MyHomePageState extends State<MyHomePageOffline> {
     }
   }
 
-
-
-
-
-
   void _filterPosts(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -221,16 +216,6 @@ class _MyHomePageState extends State<MyHomePageOffline> {
 
               final PostItem post = _filteredPosts[index];
               String coverPhotoUrl = post.imageURL ?? 'https://example.com/no-image.jpg';
-
-              // int? id = post.id;
-              // int? uid = post.userId;
-              // int? likes = post.likes;
-              // String? likedBy = post.likedBy?.first.toString();
-              // print('ID ----> $id');
-              // print('USER ----> $uid');
-              // print('Likes ----> $likes');
-              // print('likedBy ----> $likedBy');
-
 
               final bool isLiked = _userData != null && post.likedBy?.contains(_userData!.id) == true;
 

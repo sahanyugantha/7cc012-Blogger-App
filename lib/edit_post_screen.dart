@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:blogger/blog_post_item.dart';
 import 'package:blogger/DashboardPage.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -173,13 +174,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     // Perform API call to update post
     try {
-      // await ApiService.updatePost(
-      //   widget.post.id,
-      //   updatedTitle,
-      //   updatedDescription,
-      //   _imageFile,
-      //   widget.post.userId,
-      // );
+      await DatabaseHelper().updatePost(
+        new PostItem(
+            id: widget.post.id,
+            title: updatedTitle,
+            description: updatedDescription,
+            imageURL: "NA",
+            userId: widget.post.userId,
+            author: widget.post.author,
+            createTime: DateTime.now()
+        )
+      );
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

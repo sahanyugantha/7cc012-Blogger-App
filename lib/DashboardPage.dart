@@ -14,7 +14,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  UserItem? _userData;
+  late UserItem _userData;
   List<PostItem> _userPosts = [];
   Set<PostItem> _selectedPosts = Set<PostItem>(); // to select items to delete
 
@@ -27,15 +27,15 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _loadUserData() async {
     final userData = await DatabaseHelper().getUserData();
     setState(() {
-      _userData = userData;
+      _userData = userData!;
       if (_userData != null) {
-        _fetchUserPosts(1); //TODO:
+        _fetchUserPosts(_userData.id); //TODO:
       }
     });
   }
 
-  Future<void> _fetchUserPosts(int userId) async {
-    final userPosts = await DatabaseHelper().fetchUserPosts(userId);
+  Future<void> _fetchUserPosts(int? userId) async {
+    final userPosts = await DatabaseHelper().fetchUserPosts(userId!);
     setState(() {
       _userPosts = userPosts.cast<PostItem>();
     });
@@ -145,7 +145,7 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
     ).then((_) {
-      _fetchUserPosts(1); //TODO:
+      _fetchUserPosts(_userData.id); //TODO:
     });
   }
 

@@ -6,7 +6,7 @@ class PostItem {
   final int userId;
   final String author;
   final DateTime createTime;
-  int likes;
+  int likes = 0;
   Set<int>? likedBy;
 
   PostItem({
@@ -21,17 +21,12 @@ class PostItem {
     this.likedBy,
   });
 
-  @override
-  String toString() {
-    return 'PostItem {id: $id, title: $title, description: $description, userID: $userId, author: $author, imageURL: $imageURL, likes: $likes, likedBy: $likedBy, createTime: $createTime}';
-  }
-
   factory PostItem.fromMap(Map<String, dynamic> map) {
     return PostItem(
       id: map['id'],
       title: map['title'],
       description: map['description'],
-      imageURL: map['image_url'] ?? '',
+      imageURL: map['imageUrl'] ?? '',
       userId: map['user_id'],
       author: map['author'] ?? '',
       createTime: DateTime.parse(map['create_time']),
@@ -67,12 +62,10 @@ class PostItem {
       'id': id,
       'title': title,
       'description': description,
-      'image_url': imageURL,
+      'imageUrl': imageURL,
       'user_id': userId,
       'author': author,
       'create_time': createTime.toIso8601String(),
-      'likes': likes,
-      'liked_by': likedBy?.toList(),
     };
   }
 }
