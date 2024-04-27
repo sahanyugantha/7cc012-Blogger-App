@@ -8,13 +8,16 @@ import 'package:permission_handler/permission_handler.dart';
 
 class EditPostScreen extends StatefulWidget {
   final PostItem post;
-  const EditPostScreen({Key? key, required this.post}) : super(key: key);
+  final String BASE_PATH;
+
+  const EditPostScreen({Key? key, required this.post, required this.BASE_PATH}) : super(key: key);
 
   @override
   _EditPostScreenState createState() => _EditPostScreenState();
 }
 
 class _EditPostScreenState extends State<EditPostScreen> {
+ // final String BASE_PATH;
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   File? _imageFile;
@@ -102,9 +105,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
       );
     } else if (widget.post.imageURL != null) {
       // Display the current image from post
-     // String url = '${ApiService.baseUrl}/${widget.post.imageURL}';
-      String url = '';
-      return Image.network(
+      String url = '${widget.BASE_PATH}/${widget.post.imageURL}';
+      return Image.asset(
         url,
         height: 200,
         width: MediaQuery.of(context).size.width,
@@ -174,17 +176,16 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     // Perform API call to update post
     try {
-      await DatabaseHelper().updatePost(
-        new PostItem(
-            id: widget.post.id,
-            title: updatedTitle,
-            description: updatedDescription,
-            imageURL: "NA",
-            userId: widget.post.userId,
-            author: widget.post.author,
-            createTime: DateTime.now()
-        )
+      PostItem postItem = PostItem(
+          id: widget.post.id,
+          title: updatedTitle,
+          description: updatedDescription,
+          imageURL: widget.post.imageURL,
+          userId: widget.post.userId,
+          author: widget.post.author,
+          createTime: DateTime.now()
       );
+      await DatabaseHelper().updatePostDataNew(postItem, _imageFile);
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

@@ -169,6 +169,7 @@ class _AddPostPageState extends State<AddPostPage> {
     int? id = _userData?.id;
     print('ID  ----- > $id');
 
+
     _sendPostToDatabase(title, description, _imageFile, id!);
   }
 
@@ -181,7 +182,7 @@ class _AddPostPageState extends State<AddPostPage> {
         author: 'author',
         createTime: DateTime.now()
     );
-    DatabaseHelper().savePostData(postItem).then((_) async {
+    DatabaseHelper().savePostDataNew(postItem, imageFile).then((_) async {
       _showSnackBar('Blog post created!');
       _clearInputs();
       Navigator.pushReplacement(

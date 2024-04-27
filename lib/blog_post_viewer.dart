@@ -1,22 +1,24 @@
 import 'package:blogger/blog_post_item.dart';
+import 'package:blogger/db/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class PostViewerPage extends StatelessWidget {
   final PostItem post;
+  final String BASE_PATH;
 
-  const PostViewerPage({Key? key, required this.post}) : super(key: key);
+  const PostViewerPage({Key? key, required this.post, required this.BASE_PATH}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
 
-    //String coverPhotoUrl = post.imageURL ?? '${ApiService.baseUrl}/images/no-image.jpg';
+    // if coverPhotoUrl = null
+    String coverPhotoUrl = post.imageURL ?? 'assets/images/no-image.jpg';
 
-    String coverPhotoUrl = "";
-    if(post.imageURL == null || post.imageURL == "NA"){
-     // coverPhotoUrl = '${ApiService.baseUrl}/images/no-image.jpg';
+    if(post.imageURL == "NA") {
+      coverPhotoUrl = 'assets/images/no-image.jpg';
     } else {
-      //coverPhotoUrl = '${ApiService.baseUrl}/${post.imageURL}';
+      coverPhotoUrl = '$BASE_PATH/${post.imageURL}';
     }
 
     return Scaffold(
@@ -46,10 +48,11 @@ class PostViewerPage extends StatelessWidget {
               SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                child: Image.network(
+                child: Image.asset(
                   coverPhotoUrl,
                   fit: BoxFit.fitWidth, // Ensure image fits width of screen
                   errorBuilder: (context, error, stackTrace) {
+                    print('IMAGE Error $error');
                     return Icon(Icons.error); // Show icon for failed images
                   },
                 ),

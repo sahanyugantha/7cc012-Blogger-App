@@ -30,6 +30,7 @@ class _MyHomePageState extends State<MyHomePageOffline> {
   late List<PostItem> _blogPosts;
   List<PostItem> _filteredPosts = [];
   UserItem? _userData;
+  late String BASE_PATH;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController _searchController = TextEditingController();
 
@@ -42,9 +43,15 @@ class _MyHomePageState extends State<MyHomePageOffline> {
   }
 
   Future<void> _initializeData() async {
-
-    await _fetchBlogPosts();
+    BASE_PATH = await DatabaseHelper().getBasePath();
+     print("BASE PATH ---------> $BASE_PATH");
     await _loadUserData();
+    await _fetchBlogPosts();
+
+  }
+
+  Future<String> getBasePath() async {
+    return await getApplicationDocumentsDirectory().toString();
   }
 
   Future<void> _loadUserData() async {
@@ -118,7 +125,7 @@ class _MyHomePageState extends State<MyHomePageOffline> {
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: BlogPostSearchDelegate(_blogPosts),
+                delegate: BlogPostSearchDelegate(_blogPosts, BASE_PATH),
               );
             },
           ),
@@ -177,7 +184,7 @@ class _MyHomePageState extends State<MyHomePageOffline> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DashboardPage()),
+                    MaterialPageRoute(builder: (context) => DashboardPage(BASE_PATH: BASE_PATH)),
                   ).then((_) {
                     _fetchBlogPosts();
                   });
@@ -215,7 +222,13 @@ class _MyHomePageState extends State<MyHomePageOffline> {
             itemBuilder: (BuildContext context, int index) {
 
               final PostItem post = _filteredPosts[index];
-              String coverPhotoUrl = post.imageURL ?? 'https://example.com/no-image.jpg';
+              String coverPhotoUrl = post.imageURL ?? 'assets/images/no-image.jpg';
+
+              if(post.imageURL == "NA") {
+                 coverPhotoUrl = 'assets/images/no-image.jpg';
+              } else {
+                 coverPhotoUrl = '$BASE_PATH/${post.imageURL}';
+              }
 
               final bool isLiked = _userData != null && post.likedBy?.contains(_userData!.id) == true;
 
@@ -234,11 +247,11 @@ class _MyHomePageState extends State<MyHomePageOffline> {
                         Center(
                           child: FractionallySizedBox(
                             widthFactor: 0.8,
-                            child: Image.network(
+                            child: Image.asset(
                               coverPhotoUrl,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.error);
+                                return Image.asset('assets/images/no-image.jpg');
                               },
                             ),
                           ),
@@ -285,7 +298,7 @@ class _MyHomePageState extends State<MyHomePageOffline> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PostViewerPage(post: post),
+                          builder: (context) => PostViewerPage(post: post, BASE_PATH: BASE_PATH,),
                         ),
                       );
                     },
@@ -374,8 +387,6 @@ class _MyHomePageState extends State<MyHomePageOffline> {
     }
   }
 
-
-
   Future<void> _performLogout() async {
     try {
       await DatabaseHelper().performLogout();
@@ -409,8 +420,9 @@ class _MyHomePageState extends State<MyHomePageOffline> {
 
 class BlogPostSearchDelegate extends SearchDelegate<String> {
   final List<PostItem> blogPosts;
+  final String BASE_PATH;
 
-  BlogPostSearchDelegate(this.blogPosts);
+  BlogPostSearchDelegate(this.blogPosts, this.BASE_PATH);
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -469,7 +481,7 @@ class BlogPostSearchDelegate extends SearchDelegate<String> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PostViewerPage(post: suggestions[index]),
+                builder: (context) => PostViewerPage(post: suggestions[index], BASE_PATH: BASE_PATH,),
               ),
             );
           },
@@ -499,7 +511,7 @@ class BlogPostSearchDelegate extends SearchDelegate<String> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PostViewerPage(post: results[index]),
+                builder: (context) => PostViewerPage(post: results[index], BASE_PATH: BASE_PATH,),
               ),
             );
           },

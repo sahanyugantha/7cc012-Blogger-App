@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:blogger/UserItem.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as path;
 
 import 'BlogDB.dart';
 import '../blog_post_item.dart';
@@ -92,11 +96,6 @@ class DatabaseHelper {
     }
   }
 
-
-
-
-
-
   // Fetch Post By Id
   Future<PostItem?> fetchPostById(int id) async {
     final database = await DatabaseHelper().database;
@@ -178,8 +177,6 @@ class DatabaseHelper {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('userData');
   }
-
-
 
   // Retrieve user data from the database
   Future<UserItem?> fetchUserData() async {
@@ -299,7 +296,6 @@ class DatabaseHelper {
       }
     }
   }
-
 
   Future<void> changeUsername(int? id, String newUsername) async {
     try {
@@ -537,4 +533,112 @@ class DatabaseHelper {
       return null; // Return null in case of an error
     }
   }
+
+
+  Future<String> getBasePath() async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+
+  Future<String> saveImage(File imageFile, int userId, int postId) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory(path.join(appDir.path, 'assets', 'images', '$userId', '$postId'));
+
+      // Check if the directory already exists
+      if (!await imagesDir.exists()) {
+        // If not, create it
+        await imagesDir.create(recursive: true);
+        print('Directory created: ${imagesDir.path}');
+      }
+
+      final imageName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final imagePath = path.join(imagesDir.path, imageName);
+
+      // Print the image path before copying
+      print('Copying image to: $imagePath');
+
+      await imageFile.copy(imagePath);
+
+      print('Image saved successfully');
+
+      return path.join('assets', 'images', '$userId', '$postId', imageName);
+    } catch (e) {
+      print('Error saving image: $e');
+      // Rethrow the error so it can be handled in the calling code
+      throw e;
+    }
+  }
+
+
+  Future<void> savePostDataNew(PostItem postItem, File? imageFile) async {
+    try {
+      final db = await database;
+
+      // Insert the post data without imageURL first to get the auto-incremented ID
+      int postId = await db.insert(
+        'posts',
+        {
+          'title': postItem.title,
+          'description': postItem.description,
+          'imageUrl': null, // Initialize imageURL as null
+          'create_time': postItem.createTime.toIso8601String(),
+          'user_id': postItem.userId,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // Generate the path using the postId obtained from the database
+      String imagePath = '';
+      if (imageFile != null) {
+        imagePath = await saveImage(imageFile, postItem.userId, postId);
+      }
+
+      // Update the post data with the generated imagePath
+      await db.update(
+        'posts',
+        {'imageUrl': imagePath},
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+    } catch (e) {
+      print('Error saving post data: $e');
+      rethrow; // Rethrow the error to handle it in the calling code
+    }
+  }
+
+
+  Future<void> updatePostDataNew(PostItem postItem, File? imageFile) async {
+    try {
+      final db = await database;
+
+      String imagePath = '';
+      if (imageFile != null) {
+         imagePath = await saveImage(imageFile, postItem.userId, postItem.id!);
+      }
+       await db.update(
+        'posts',
+        {
+          'title': postItem.title,
+          'description': postItem.description,
+          'imageUrl': imagePath,
+          'create_time': postItem.createTime.toIso8601String(),
+          'user_id': postItem.userId,
+        }, where: 'id = ?',
+        whereArgs: [postItem.id],
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // Generate the path using the postId obtained from the database
+
+
+    } catch (e) {
+      print('Error saving post data: $e');
+      rethrow; // Rethrow the error to handle it in the calling code
+    }
+  }
+
+
 }

@@ -7,7 +7,8 @@ import 'package:intl/intl.dart';
 import 'edit_post_screen.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  final String BASE_PATH;
+  const DashboardPage({Key? key, required this.BASE_PATH}) : super(key: key);
 
   @override
   _DashboardPageState createState() => _DashboardPageState();
@@ -143,7 +144,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void _editPost(PostItem post) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditPostScreen(post: post)),
+      MaterialPageRoute(builder: (context) => EditPostScreen(post: post, BASE_PATH: widget.BASE_PATH)),
     ).then((_) {
       _fetchUserPosts(_userData.id); //TODO:
     });

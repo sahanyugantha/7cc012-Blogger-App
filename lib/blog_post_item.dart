@@ -2,7 +2,7 @@ class PostItem {
   int? id;
   final String title;
   final String description;
-  final String imageURL;
+  late final String imageURL;
   final int userId;
   final String author;
   final DateTime createTime;
