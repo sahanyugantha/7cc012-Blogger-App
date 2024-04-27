@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:blogger/UserItem.dart';
 import 'package:blogger/blog_post_item.dart';
@@ -9,15 +10,13 @@ import 'package:blogger/user_registration_page.dart';
 import 'package:blogger/user_settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:blogger/loginpage.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:http/http.dart' as http;
 
 import 'DashboardPage.dart';
 import 'add_post_screen.dart';
 import 'blog_post_viewer.dart';
-import 'db/BlogDB.dart';
 
 class MyHomePageOffline extends StatefulWidget {
   const MyHomePageOffline({Key? key}) : super(key: key);
@@ -412,11 +411,44 @@ class _MyHomePageState extends State<MyHomePageOffline> {
     }
   }
 
-  void _sharePost(BuildContext context, PostItem post) {
-    // Implement post sharing logic here
-    // Use Share.share to share post content and image if available
+  void _sharePost(BuildContext context, PostItem post) async {
+    String title = post.title;
+    String description = post.description;
+    String? imageURL = post.imageURL;
+
+    if (imageURL != null) {
+      try {
+        final tempImagePath = "$BASE_PATH/$imageURL";
+
+        // Check if the image file exists
+        if (File(tempImagePath).existsSync()) {
+          // Share the post with the image file
+          await Share.shareFiles([tempImagePath], text: '$title\n$description');
+        } else {
+          throw Exception('Image file does not exist.');
+        }
+      } catch (e) {
+        print('Error sharing post: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error sharing post.'),
+          ),
+        );
+      }
+    } else {
+      // Share post without an image
+      await Share.share('$title\n$description');
+    }
   }
+
+
 }
+
+
+
+
+
+//SEARCH DELEGATE CLASS//////
 
 class BlogPostSearchDelegate extends SearchDelegate<String> {
   final List<PostItem> blogPosts;
