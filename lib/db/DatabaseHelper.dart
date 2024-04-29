@@ -537,6 +537,7 @@ class DatabaseHelper {
 
   Future<String> getBasePath() async {
     Directory directory = await getApplicationDocumentsDirectory();
+    print("BASE PATH --------> ${directory.path}");
     return directory.path;
   }
 

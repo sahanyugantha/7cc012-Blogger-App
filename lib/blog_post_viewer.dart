@@ -53,7 +53,10 @@ class PostViewerPage extends StatelessWidget {
                   fit: BoxFit.fitWidth, // Ensure image fits width of screen
                   errorBuilder: (context, error, stackTrace) {
                     print('IMAGE Error $error');
-                    return Icon(Icons.error); // Show icon for failed images
+                    return Image.asset(
+                        'assets/images/no-image.jpg',
+                        fit: BoxFit.fitWidth,
+                    ); // Show icon for failed images
                   },
                 ),
               ),

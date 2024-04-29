@@ -103,9 +103,12 @@ class _EditPostScreenState extends State<EditPostScreen> {
         width: MediaQuery.of(context).size.width,
         fit: BoxFit.cover,
       );
-    } else if (widget.post.imageURL != null) {
+    } else if (widget.post.imageURL.isNotEmpty &&
+        widget.post.imageURL.isNotEmpty != "" &&
+        widget.post.imageURL != "NA") {
       // Display the current image from post
       String url = '${widget.BASE_PATH}/${widget.post.imageURL}';
+
       return Image.asset(
         url,
         height: 200,
@@ -113,7 +116,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
         fit: BoxFit.cover,
       );
     } else {
-      return Container(); // Placeholder widget if no image URL is available
+      String placeholder = 'assets/images/no-image.jpg';
+      return Image.asset(
+        placeholder,
+        height: 200,
+        width: MediaQuery.of(context).size.width,
+        fit: BoxFit.cover,
+      );// Placeholder widget if no image URL is available
     }
   }
 
