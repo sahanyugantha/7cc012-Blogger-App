@@ -150,14 +150,41 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  void _deleteSelectedPosts() async {
+  void _deleteSelectedPosts() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete selected posts?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog
+                await _deletePosts(); // Proceed with deletion
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deletePosts() async {
     for (final post in _selectedPosts) {
       await DatabaseHelper().deletePost(post.id!);
-      setState(() {
-        _userPosts.remove(post);
-      });
     }
-    _selectedPosts.clear();
+    setState(() {
+      _userPosts.removeWhere((post) => _selectedPosts.contains(post));
+      _selectedPosts.clear();
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -165,4 +192,5 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+
 }
